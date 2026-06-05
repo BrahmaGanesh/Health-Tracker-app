@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+{% block title %}My Profile | HealthTrack{% endblock %}
+{% block page_title %}My Profile{% endblock %}
+
+{% block content %}
+<style>
+.profile-hero{background:linear-gradient(135deg,var(--navy) 0%,#1e3f6e 50%,var(--violet) 100%);border-radius:var(--radius-lg);padding:28px 32px;color:white;margin-bottom:24px;position:relative;overflow:hidden;}
+.profile-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/svg%3E");}
+.hero-inner{display:flex;align-items:center;gap:24px;flex-wrap:wrap;position:relative;}
+.avatar-big{width:80px;height:80px;border-radius:24px;background:linear-gradient(135deg,var(--mint),var(--sage));display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900;color:var(--navy);flex-shrink:0;box-shadow:0 8px 24px rgba(159,211,199,0.3);font-family:'Fraunces',serif;}
+.hero-info .hero-name{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,32px);font-weight:900;margin-bottom:6px;}
+.hero-info .hero-email{font-size:14px;opacity:0.72;margin-bottom:12px;}
+.hero-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.hero-chip{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:100px;padding:4px 14px;font-size:12px;font-weight:600;}
+.hero-actions{margin-left:auto;display:flex;gap:10px;position:relative;}
+.btn-edit-hero{background:rgba(255,255,255,0.15);color:white;border:1.5px solid rgba(255,255,255,0.3);border-radius:var(--radius-sm);padding:10px 20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:6px;transition:all 0.18s;cursor:pointer;}
+.btn-edit-hero:hover{background:rgba(255,255,255,0.25);color:white;}
+
+.profile-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-bottom:24px;}
+@media(max-width:960px){.profile-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:576px){.profile-grid{grid-template-columns:1fr;}}
+
+.info-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;animation:fadeUp 0.4s ease both;}
+.info-card:nth-child(1){animation-delay:0.05s;} .info-card:nth-child(2){animation-delay:0.10s;} .info-card:nth-child(3){animation-delay:0.15s;}
+.info-card:nth-child(4){animation-delay:0.20s;} .info-card:nth-child(5){animation-delay:0.25s;}
+.ic-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.ic-header-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.ic-header-icon.navy{background:rgba(20,45,76,0.1);} .ic-header-icon.green{background:var(--green-light,#e8f5ee);}
+.ic-header-icon.violet{background:rgba(79,59,120,0.1);} .ic-header-icon.gold{background:#fef9ec;}
+.ic-header-icon.blue{background:#dbeafe;}
+.ic-title{font-family:'Fraunces',serif;font-size:15px;font-weight:700;color:var(--text-primary);}
+.ic-body{padding:16px 18px;}
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);}
+.info-row:last-child{border-bottom:none;}
+.info-key{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);}
+.info-val{font-size:14px;font-weight:600;color:var(--text-primary);text-align:right;}
+.info-val.mono{font-family:'DM Mono',monospace;}
+
+.stat-mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:24px;}
+.stat-mini{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:16px;text-align:center;animation:fadeUp 0.4s ease both;}
+.sm-val{font-family:'DM Mono',monospace;font-size:24px;font-weight:500;display:block;margin-bottom:4px;}
+.sm-lbl{font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);}
+
+/* Medicine section */
+.med-section{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:24px;animation:fadeUp 0.4s 0.3s ease both;}
+.med-hdr{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.med-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px;}
+.btn-add-med{background:linear-gradient(135deg,var(--sage),var(--mint));color:var(--navy);border:none;border-radius:var(--radius-sm);padding:8px 16px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.18s;text-decoration:none;}
+.btn-add-med:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(97,179,144,0.3);color:var(--navy);}
+.med-item{display:flex;align-items:center;gap:14px;padding:13px 22px;border-bottom:1px solid var(--border);transition:background 0.15s;}
+.med-item:last-child{border-bottom:none;}
+.med-item:hover{background:var(--bg);}
+.med-icon-wrap{width:40px;height:40px;border-radius:12px;background:rgba(97,179,144,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.med-info{flex:1;}
+.med-name{font-size:14px;font-weight:700;color:var(--text-primary);}
+.med-details{font-size:12px;color:var(--text-muted);margin-top:2px;}
+.med-timing-chip{background:var(--accent-pale);color:var(--accent-dark);border-radius:100px;padding:3px 10px;font-size:11px;font-weight:600;flex-shrink:0;}
+.med-del-btn{width:30px;height:30px;border-radius:8px;background:var(--danger-light);color:var(--danger);border:none;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;text-decoration:none;transition:all 0.15s;flex-shrink:0;}
+.med-del-btn:hover{background:#ef4444;color:white;}
+
+/* Add medicine form modal */
+.add-med-form{padding:20px 22px;background:var(--bg);border-top:1px solid var(--border);display:none;}
+.add-med-form.show{display:block;}
+.med-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+@media(max-width:600px){.med-form-grid{grid-template-columns:1fr;}}
+
+/* Conditions display */
+.conditions-grid{display:flex;flex-wrap:wrap;gap:8px;padding:4px 0;}
+.cond-chip{display:flex;align-items:center;gap:6px;background:var(--accent-pale);border:1px solid var(--accent-border);border-radius:100px;padding:6px 14px;font-size:13px;font-weight:600;color:var(--accent-dark);}
+
+/* Goals display */
+.goals-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.goal-item{background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;}
+.goal-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);margin-bottom:4px;}
+.goal-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--text-primary);}
+
+/* Danger zone */
+.danger-zone{background:var(--card-bg);border-radius:var(--radius);border:1.5px solid #fca5a5;padding:22px 24px;margin-bottom:24px;}
+.danger-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:#991b1b;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.danger-desc{font-size:13px;color:var(--text-muted);margin-bottom:16px;}
+.btn-danger-del{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;border-radius:var(--radius-sm);padding:10px 20px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all 0.18s;}
+.btn-danger-del:hover{background:#ef4444;color:white;border-color:#ef4444;}
+</style>
+
+<!-- HERO -->
+<div class="profile-hero animate-fadeIn">
+  <div class="hero-inner">
+    <div class="avatar-big">{{ user.name[0].upper() }}</div>
+    <div class="hero-info">
+      <div class="hero-name">{{ user.name }}</div>
+      <div class="hero-email">{{ user.email }}</div>
+      <div class="hero-chips">
+        {% if user.health_profile %}
+          {% if user.health_profile.gender %}<span class="hero-chip">{{ user.health_profile.gender|title }}</span>{% endif %}
+          {% if user.age %}<span class="hero-chip">{{ user.age }} years</span>{% endif %}
+          {% if user.health_profile.diet_preference %}<span class="hero-chip">{{ user.health_profile.diet_preference|replace('_',' ')|title }}</span>{% endif %}
+        {% endif %}
+        {% if user.bmi %}<span class="hero-chip">BMI {{ user.bmi }} · {{ user.bmi_status }}</span>{% endif %}
+        <span class="hero-chip">Member since {{ user.created_at.strftime('%b %Y') }}</span>
+      </div>
+    </div>
+    <div class="hero-actions">
+      <a href="{{ url_for('profile.edit') }}" class="btn-edit-hero">✏️ Edit Profile</a>
+    </div>
+  </div>
+</div>
+
+<!-- QUICK STATS -->
+<div class="stat-mini-grid">
+  <div class="stat-mini stagger-1">
+    <span class="sm-val" style="color:var(--violet);">{{ user.health_profile.current_weight_kg if user.health_profile and user.health_profile.current_weight_kg else '—' }}{% if user.health_profile and user.health_profile.current_weight_kg %}kg{% endif %}</span>
+    <span class="sm-lbl">Current Weight</span>
+  </div>
+  <div class="stat-mini stagger-2">
+    <span class="sm-val" style="color:var(--sage);">{{ favorites_count }}</span>
+    <span class="sm-lbl">Saved Recipes</span>
+  </div>
+  <div class="stat-mini stagger-3">
+    <span class="sm-val" style="color:var(--navy);">{{ plans_count }}</span>
+    <span class="sm-lbl">Meal Plans</span>
+  </div>
+</div>
+
+<!-- INFO CARDS GRID -->
+<div class="profile-grid">
+
+  <!-- Personal -->
+  <div class="info-card">
+    <div class="ic-header">
+      <div class="ic-header-icon navy">👤</div>
+      <div class="ic-title">Personal Details</div>
+    </div>
+    <div class="ic-body">
+      <div class="info-row"><span class="info-key">Name</span><span class="info-val">{{ user.name }}</span></div>
+      <div class="info-row"><span class="info-key">Gender</span><span class="info-val">{{ user.health_profile.gender|title if user.health_profile and user.health_profile.gender else '—' }}</span></div>
+      <div class="info-row"><span class="info-key">Age</span><span class="info-val">{{ user.age or '—' }} yrs</span></div>
+      <div class="info-row"><span class="info-key">DOB</span><span class="info-val">{{ user.health_profile.date_of_birth.strftime('%d %b %Y') if user.health_profile and user.health_profile.date_of_birth else '—' }}</span></div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="info-card">
+    <div class="ic-header">
+      <div class="ic-header-icon green">📏</div>
+      <div class="ic-title">Body Measurements</div>
+    </div>
+    <div class="ic-body">
+      <div class="info-row"><span class="info-key">Height</span><span class="info-val mono">{{ user.health_profile.height_cm if user.health_profile and user.health_profile.height_cm else '—' }} cm</span></div>
+      <div class="info-row"><span class="info-key">Weight</span><span class="info-val mono">{{ user.health_profile.current_weight_kg if user.health_profile and user.health_profile.current_weight_kg else '—' }} kg</span></div>
+      <div class="info-row"><span class="info-key">BMI</span><span class="info-val mono">{{ user.bmi or '—' }}</span></div>
+      <div class="info-row"><span class="info-key">Status</span><span class="info-val">{{ user.bmi_status }}</span></div>
+    </div>
+  </div>
+
+  <!-- Lifestyle -->
+  <div class="info-card">
+    <div class="ic-header">
+      <div class="ic-header-icon gold">🌿</div>
+      <div class="ic-title">Lifestyle</div>
+    </div>
+    <div class="ic-body">
+      <div class="info-row"><span class="info-key">Diet</span><span class="info-val">{{ user.health_profile.diet_preference|replace('_',' ')|title if user.health_profile and user.health_profile.diet_preference else '—' }}</span></div>
+      <div class="info-row"><span class="info-key">Activity</span><span class="info-val">{{ user.health_profile.activity_level|replace('_',' ')|title if user.health_profile and user.health_profile.activity_level else '—' }}</span></div>
+      <div class="info-row"><span class="info-key">Cal Target</span><span class="info-val mono">{{ user.daily_calorie_target }} kcal</span></div>
+      <div class="info-row"><span class="info-key">Protein</span><span class="info-val mono">{{ user.daily_protein_target }}g/day</span></div>
+    </div>
+  </div>
+
+  <!-- Goals -->
+  <div class="info-card">
+    <div class="ic-header">
+      <div class="ic-header-icon violet">🎯</div>
+      <div class="ic-title">Health Goals</div>
+    </div>
+    <div class="ic-body">
+      {% if user.goals %}
+      <div class="info-row"><span class="info-key">Primary Goal</span><span class="info-val">{{ user.goals.primary_goal|replace('_',' ')|title }}</span></div>
+      <div class="info-row"><span class="info-key">Target Weight</span><span class="info-val mono">{{ user.goals.target_weight_kg or '—' }}{% if user.goals.target_weight_kg %}kg{% endif %}</span></div>
+      <div class="info-row"><span class="info-key">Goal Speed</span><span class="info-val">{{ user.goals.goal_speed|title if user.goals.goal_speed else '—' }}</span></div>
+      <div class="info-row"><span class="info-key">Water Target</span><span class="info-val mono">{{ user.goals.target_water_litres or 2.5 }}L/day</span></div>
+      {% else %}
+      <div style="padding:12px 0;color:var(--text-muted);font-size:13px;">No goals set. <a href="{{ url_for('profile.onboarding_step4') }}" style="color:var(--accent);">Set now →</a></div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Latest Readings -->
+  <div class="info-card">
+    <div class="ic-header">
+      <div class="ic-header-icon blue">📊</div>
+      <div class="ic-title">Latest Readings</div>
+    </div>
+    <div class="ic-body">
+      <div class="info-row">
+        <span class="info-key">Blood Pressure</span>
+        <span class="info-val mono" style="{% if latest_bp and latest_bp.value_1 >= 140 %}color:#ef4444;{% endif %}">
+          {% if latest_bp %}{{ latest_bp.value_1|int }}/{{ latest_bp.value_2|int }} mmHg{% else %}—{% endif %}
+        </span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">Weight</span>
+        <span class="info-val mono">{% if latest_weight %}{{ latest_weight.value_1 }}kg{% else %}—{% endif %}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-key">Last BP Check</span>
+        <span class="info-val">{% if latest_bp %}{{ latest_bp.recorded_at.strftime('%d %b') }}{% else %}—{% endif %}</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- CONDITIONS -->
+<div class="info-card" style="margin-bottom:24px;">
+  <div class="ic-header">
+    <div class="ic-header-icon" style="background:#fdecea;">🏥</div>
+    <div class="ic-title">Health Conditions</div>
+    <a href="{{ url_for('profile.edit') }}#conditions" style="margin-left:auto;font-size:12px;font-weight:600;color:var(--accent);">Edit →</a>
+  </div>
+  <div class="ic-body">
+    {% if user.conditions %}
+    <div class="conditions-grid">
+      {% for uc in user.conditions %}
+      <span class="cond-chip">
+        {{ uc.condition.icon }} {{ uc.condition.name }}
+      </span>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="color:var(--text-muted);font-size:13px;">No conditions selected. <a href="{{ url_for('profile.onboarding_step3') }}" style="color:var(--accent);">Add conditions →</a></div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- MEDICINES -->
+<div class="med-section">
+  <div class="med-hdr">
+    <div class="med-title">💊 Medicine Reminders</div>
+    <button class="btn-add-med" onclick="toggleMedForm()">+ Add Medicine</button>
+  </div>
+
+  <!-- Add form (hidden by default) -->
+  <div class="add-med-form" id="addMedForm">
+    <form method="POST" action="{{ url_for('profile.add_medicine') }}">
+      <div class="med-form-grid">
+        <div>
+          <label class="form-label">Medicine Name *</label>
+          <input type="text" name="name" class="form-control" placeholder="e.g. Amlodipine 5mg" required>
+        </div>
+        <div>
+          <label class="form-label">Dosage</label>
+          <input type="text" name="dosage" class="form-control" placeholder="e.g. 1 tablet">
+        </div>
+        <div>
+          <label class="form-label">Time</label>
+          <input type="time" name="timing" class="form-control" value="08:00">
+        </div>
+        <div>
+          <label class="form-label">Frequency</label>
+          <select name="frequency" class="form-control">
+            <option value="daily">Daily</option>
+            <option value="twice_daily">Twice Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="as_needed">As Needed</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">With Food?</label>
+          <select name="with_food" class="form-control">
+            <option value="doesn't_matter">Doesn't Matter</option>
+            <option value="yes">With Food</option>
+            <option value="no">Without Food</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">For Condition</label>
+          <input type="text" name="condition" class="form-control" placeholder="e.g. High BP">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="btn btn-primary">💊 Save Medicine</button>
+        <button type="button" onclick="toggleMedForm()" class="btn btn-secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+  {% if user.medicines %}
+    {% for med in user.medicines %}
+    {% if med.active %}
+    <div class="med-item">
+      <div class="med-icon-wrap">💊</div>
+      <div class="med-info">
+        <div class="med-name">{{ med.name }}</div>
+        <div class="med-details">
+          {{ med.dosage or '' }}{% if med.dosage %} · {% endif %}
+          {{ med.frequency|replace('_',' ')|title }} ·
+          {{ med.with_food|replace("doesn't_matter","anytime")|replace('_',' ') }}
+          {% if med.condition %} · For {{ med.condition }}{% endif %}
+        </div>
+      </div>
+      <span class="med-timing-chip">⏰ {{ med.timing or '—' }}</span>
+      <a href="{{ url_for('profile.delete_medicine', med_id=med.id) }}"
+         class="med-del-btn"
+         onclick="return confirm('Remove {{ med.name }}?')">
+        <i class="bi bi-trash"></i>
+      </a>
+    </div>
+    {% endif %}
+    {% endfor %}
+  {% else %}
+  <div style="padding:30px;text-align:center;color:var(--text-muted);font-size:14px;">
+    <div style="font-size:36px;margin-bottom:8px;">💊</div>
+    No medicines added. Click "Add Medicine" to set up reminders.
+  </div>
+  {% endif %}
+</div>
+
+<!-- DANGER ZONE -->
+<div class="danger-zone">
+  <div class="danger-title">⚠️ Danger Zone</div>
+  <p class="danger-desc">Permanently delete your account and all health data. This action cannot be undone.</p>
+  <button onclick="showDeleteModal()" class="btn-danger-del">🗑️ Delete My Account</button>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-backdrop" id="deleteModal" style="display:none;">
+  <div class="modal-box">
+    <button class="modal-close" onclick="hideDeleteModal()">✕</button>
+    <div class="modal-title">⚠️ Delete Account</div>
+    <p style="font-size:14px;color:var(--text-muted);margin-bottom:20px;line-height:1.6;">
+      This will permanently delete your account and all your health data including BP readings, meal plans, and tracker history. This cannot be undone.
+    </p>
+    <form method="POST" action="{{ url_for('auth.delete_account') }}">
+      <div style="margin-bottom:16px;">
+        <label class="form-label">Enter your password to confirm</label>
+        <input type="password" name="password" class="form-control" placeholder="Your password" required>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button type="submit" class="btn btn-danger">🗑️ Yes, Delete Everything</button>
+        <button type="button" onclick="hideDeleteModal()" class="btn btn-secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleMedForm() {
+  const f = document.getElementById('addMedForm');
+  f.classList.toggle('show');
+  if (f.classList.contains('show')) f.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+function showDeleteModal() { document.getElementById('deleteModal').style.display = 'flex'; }
+function hideDeleteModal() { document.getElementById('deleteModal').style.display = 'none'; }
+</script>
+{% endblock %}

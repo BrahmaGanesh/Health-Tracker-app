@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% block title %}Step 4 of 5 — Your Goals | HealthTrack{% endblock %}
+{% block content %}
+<style>
+.onboard-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;background:var(--bg);}
+.onboard-box{width:100%;max-width:580px;animation:fadeUp 0.5s ease both;}
+.ob-progress-wrap{margin-bottom:32px;}
+.ob-progress-steps{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:relative;}
+.ob-progress-steps::before{content:'';position:absolute;top:14px;left:14px;right:14px;height:2px;background:var(--border);z-index:0;}
+.ob-step-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--card-bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text-muted);position:relative;z-index:1;transition:all 0.3s ease;}
+.ob-step-dot.done{background:var(--sage);border-color:var(--sage);color:white;}
+.ob-step-dot.active{background:var(--navy);border-color:var(--navy);color:white;box-shadow:0 0 0 4px var(--accent-glow);}
+.ob-progress-bar{height:4px;background:var(--border);border-radius:100px;overflow:hidden;}
+.ob-progress-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--mint));border-radius:100px;}
+.ob-progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-top:8px;font-weight:500;}
+.ob-card{background:var(--card-bg);border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow);padding:36px 40px 40px;}
+@media(max-width:560px){.ob-card{padding:24px 18px;}}
+.ob-step-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.ob-title{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,30px);font-weight:900;color:var(--text-primary);margin-bottom:6px;}
+.ob-subtitle{font-size:14px;color:var(--text-muted);margin-bottom:28px;line-height:1.6;}
+.ob-form-group{margin-bottom:20px;}
+.ob-label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:8px;}
+.ob-input{width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text-primary);background:var(--input-bg);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+.ob-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);background:var(--card-bg);}
+.option-grid{display:grid;gap:10px;}
+.option-grid.cols3{grid-template-columns:repeat(3,1fr);}
+.option-grid.cols2{grid-template-columns:repeat(2,1fr);}
+@media(max-width:480px){.option-grid.cols3,.option-grid.cols2{grid-template-columns:1fr 1fr;}}
+.opt-option{position:relative;}
+.opt-option input{position:absolute;opacity:0;width:0;height:0;}
+.opt-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:16px 12px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--input-bg);cursor:pointer;transition:all 0.18s;text-align:center;}
+.opt-icon{font-size:24px;}
+.opt-title{font-size:13px;font-weight:700;color:var(--text-primary);}
+.opt-desc{font-size:11px;color:var(--text-muted);}
+.opt-option input:checked + .opt-btn{border-color:var(--accent);background:var(--accent-pale);box-shadow:0 0 0 2px var(--accent-glow);}
+.opt-option input:checked + .opt-btn .opt-title{color:var(--accent-dark);}
+.opt-btn:hover{border-color:var(--accent);}
+.weight-preview{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 18px;margin-top:10px;display:none;font-size:14px;color:var(--text-muted);}
+.weight-preview.show{display:flex;gap:16px;flex-wrap:wrap;}
+.weight-stat{text-align:center;flex:1;}
+.weight-stat-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:var(--text-primary);display:block;}
+.weight-stat-lbl{font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);}
+.input-with-unit{position:relative;}
+.input-unit{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:700;color:var(--text-muted);pointer-events:none;}
+.ob-nav{display:flex;justify-content:space-between;gap:12px;margin-top:32px;}
+.ob-btn-back{background:var(--card-bg);color:var(--text-muted);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:6px;transition:all 0.18s;}
+.ob-btn-back:hover{border-color:var(--accent);color:var(--accent);}
+.ob-btn-next{background:linear-gradient(135deg,var(--sage),var(--mint));color:var(--navy);border:none;border-radius:var(--radius-sm);padding:13px 32px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform 0.18s,box-shadow 0.18s;}
+.ob-btn-next:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(97,179,144,0.35);}
+</style>
+
+<div class="onboard-wrap">
+  <div class="onboard-box">
+    <div class="ob-progress-wrap">
+      <div class="ob-progress-steps">
+        <div class="ob-step-dot done">✓</div>
+        <div class="ob-step-dot done">✓</div>
+        <div class="ob-step-dot done">✓</div>
+        <div class="ob-step-dot active">4</div>
+        <div class="ob-step-dot">5</div>
+      </div>
+      <div class="ob-progress-bar"><div class="ob-progress-fill" style="width:80%"></div></div>
+      <div class="ob-progress-label"><span>Step 4 of 5</span><span>Your Goals</span></div>
+    </div>
+
+    <div class="ob-card">
+      <div class="ob-step-label">🎯 Step 4 — Set Your Goals</div>
+      <h2 class="ob-title">What are you working towards?</h2>
+      <p class="ob-subtitle">
+        We use your goals to generate the right calorie targets, meal plans, and progress tracking.
+        {% if 'High Blood Pressure' in conditions %}
+        Your BP recovery plan will be built around these targets.
+        {% endif %}
+      </p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat,msg in messages %}
+        <div style="background:var(--danger-light);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;font-weight:600;color:#991b1b;">⚠️ {{ msg }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('profile.onboarding_step4') }}">
+
+        <!-- Primary Goal -->
+        <div class="ob-form-group">
+          <label class="ob-label">Primary Goal</label>
+          <div class="option-grid cols2">
+            {% set goals_list = [
+              ('weight_loss',      '⚖️', 'Lose Weight',      'Reduce body weight steadily'),
+              ('control_bp',       '❤️', 'Control BP',        'Lower blood pressure'),
+              ('control_sugar',    '🩺', 'Control Sugar',     'Manage blood glucose'),
+              ('healthy_lifestyle','🌿', 'Stay Healthy',      'Maintain overall wellness'),
+              ('weight_gain',      '💪', 'Gain Weight',       'Build healthy body mass'),
+            ] %}
+            {% for val, icon, title, desc in goals_list %}
+            <label class="opt-option">
+              <input type="radio" name="primary_goal" value="{{ val }}"
+                     {% if primary_goal == val %}checked{% endif %}>
+              <div class="opt-btn">
+                <span class="opt-icon">{{ icon }}</span>
+                <span class="opt-title">{{ title }}</span>
+                <span class="opt-desc">{{ desc }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Target Weight -->
+        <div class="ob-form-group">
+          <label class="ob-label" for="target_weight">
+            Target Weight
+            {% if current_weight %}
+              <span style="font-weight:500;text-transform:none;letter-spacing:0;">(Current: {{ current_weight }}kg)</span>
+            {% endif %}
+          </label>
+          <div class="input-with-unit">
+            <input type="number" id="target_weight" name="target_weight"
+                   class="ob-input" placeholder="e.g. 70"
+                   value="{{ target_weight or '' }}"
+                   min="20" max="300" step="0.5"
+                   style="padding-right:44px;"
+                   oninput="updateWeightPreview()">
+            <span class="input-unit">kg</span>
+          </div>
+          <div class="weight-preview" id="weightPreview">
+            <div class="weight-stat">
+              <span class="weight-stat-val" id="wpDiff">—</span>
+              <span class="weight-stat-lbl">To Lose</span>
+            </div>
+            <div class="weight-stat">
+              <span class="weight-stat-val" id="wpWeeks">—</span>
+              <span class="weight-stat-lbl">Weeks</span>
+            </div>
+            <div class="weight-stat">
+              <span class="weight-stat-val" id="wpDate">—</span>
+              <span class="weight-stat-lbl">Est. Date</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Goal Speed -->
+        <div class="ob-form-group">
+          <label class="ob-label">Goal Speed</label>
+          <div class="option-grid cols3">
+            {% set speeds = [
+              ('slow',   '🐢', 'Slow',   '0.25 kg/week — safest'),
+              ('normal', '🚶', 'Normal', '0.5 kg/week — recommended'),
+              ('fast',   '🏃', 'Fast',   '0.75 kg/week — challenging'),
+            ] %}
+            {% for val, icon, title, desc in speeds %}
+            <label class="opt-option">
+              <input type="radio" name="goal_speed" value="{{ val }}"
+                     {% if (goal_speed or 'normal') == val %}checked{% endif %}>
+              <div class="opt-btn">
+                <span class="opt-icon">{{ icon }}</span>
+                <span class="opt-title">{{ title }}</span>
+                <span class="opt-desc">{{ desc }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="ob-nav">
+          <a href="{{ url_for('profile.onboarding_step3') }}" class="ob-btn-back">← Back</a>
+          <button type="submit" class="ob-btn-next">Next — Lifestyle →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+const CURRENT_WEIGHT = {{ current_weight or 'null' }};
+
+function updateWeightPreview() {
+  const target  = parseFloat(document.getElementById('target_weight').value);
+  const preview = document.getElementById('weightPreview');
+  if (!target || !CURRENT_WEIGHT) { preview.classList.remove('show'); return; }
+  const diff  = (CURRENT_WEIGHT - target).toFixed(1);
+  if (diff <= 0) { preview.classList.remove('show'); return; }
+  const weeks = Math.ceil(diff / 0.5);
+  const est   = new Date();
+  est.setDate(est.getDate() + weeks * 7);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('wpDiff').textContent  = diff + 'kg';
+  document.getElementById('wpWeeks').textContent = weeks;
+  document.getElementById('wpDate').textContent  = months[est.getMonth()] + ' ' + est.getFullYear();
+  preview.classList.add('show');
+}
+updateWeightPreview();
+</script>
+{% endblock %}

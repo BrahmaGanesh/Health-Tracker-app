@@ -1,0 +1,931 @@
+{% extends "base.html" %}
+{% block title %}Dashboard | HealthTrack{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<style>
+/* ── DASHBOARD GRID ───────────────────────────────────────── */
+.dash-grid-top {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
+}
+@media (max-width: 1100px) { .dash-grid-top { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 576px)  { .dash-grid-top { grid-template-columns: 1fr 1fr; } }
+
+.dash-main {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 22px;
+  margin-bottom: 24px;
+}
+@media (max-width: 960px) { .dash-main { grid-template-columns: 1fr; } }
+
+.dash-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 22px;
+  margin-bottom: 24px;
+}
+@media (max-width: 960px)  { .dash-bottom { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px)  { .dash-bottom { grid-template-columns: 1fr; } }
+
+/* ── HERO GREETING ────────────────────────────────────────── */
+.dash-hero {
+  background: linear-gradient(135deg, var(--navy) 0%, #1e3f6e 50%, var(--violet) 100%);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  color: white;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.dash-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/svg%3E");
+}
+.hero-left { position: relative; }
+.hero-greeting {
+  font-size: 13px;
+  opacity: 0.7;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.hero-name {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+.hero-name span { color: var(--mint); }
+.hero-subtitle { font-size: 14px; opacity: 0.75; }
+.hero-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.hero-tag {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 100px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  backdrop-filter: blur(4px);
+}
+.hero-right {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  position: relative;
+}
+.hero-stat-box {
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 14px;
+  padding: 14px 18px;
+  text-align: center;
+  min-width: 90px;
+  backdrop-filter: blur(4px);
+}
+.hero-stat-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 22px;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 3px;
+}
+.hero-stat-lbl {
+  font-size: 10px;
+  opacity: 0.65;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* ── STAT CARDS ───────────────────────────────────────────── */
+.stat-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px 18px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  animation: fadeUp 0.4s ease both;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.stat-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.stat-card.bp::before     { background: linear-gradient(90deg, #ef4444, #dc2626); }
+.stat-card.weight::before { background: linear-gradient(90deg, var(--violet), #7c3aed); }
+.stat-card.water::before  { background: linear-gradient(90deg, #0ea5e9, #38bdf8); }
+.stat-card.meals::before  { background: linear-gradient(90deg, var(--sage), var(--mint)); }
+
+.stat-card:nth-child(1) { animation-delay: 0.05s; }
+.stat-card:nth-child(2) { animation-delay: 0.10s; }
+.stat-card:nth-child(3) { animation-delay: 0.15s; }
+.stat-card:nth-child(4) { animation-delay: 0.20s; }
+
+.sc-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sc-value {
+  font-family: 'DM Mono', monospace;
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.sc-value.red    { color: #ef4444; }
+.sc-value.purple { color: var(--violet); }
+.sc-value.blue   { color: #0ea5e9; }
+.sc-value.green  { color: var(--sage); }
+.sc-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.sc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-radius: 100px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+}
+.sc-progress {
+  margin-top: 10px;
+}
+.sc-prog-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.sc-prog-bg {
+  height: 6px;
+  background: var(--border);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.sc-prog-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 1.2s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+/* ── CHART CARD ───────────────────────────────────────────── */
+.chart-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fadeUp 0.4s 0.1s ease both;
+}
+.chart-card-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.chart-card-title {
+  font-family: 'Fraunces', serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.chart-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.legend-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.chart-body { padding: 18px 20px 20px; }
+
+/* ── INSIGHTS CARD ────────────────────────────────────────── */
+.insights-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fadeUp 0.4s 0.15s ease both;
+}
+.insight-item {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  transition: background 0.15s;
+}
+.insight-item:last-child { border-bottom: none; }
+.insight-item:hover { background: var(--bg); }
+.insight-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.insight-text { font-size: 13px; color: var(--text-primary); line-height: 1.55; }
+.insight-dir {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+}
+.dir-improving { color: var(--sage); }
+.dir-worsening { color: #ef4444; }
+.dir-stable    { color: var(--text-muted); }
+
+/* ── TODAY'S MEALS ────────────────────────────────────────── */
+.meals-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fadeUp 0.4s 0.1s ease both;
+}
+.meal-slot-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.meal-slot-item:last-child { border-bottom: none; }
+.meal-slot-item:hover { background: var(--bg); }
+.meal-slot-item.completed { opacity: 0.6; }
+.meal-slot-time {
+  width: 80px;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+}
+.meal-slot-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: var(--transition);
+}
+.meal-slot-dot.done { background: var(--sage); }
+.meal-slot-dot.pending { background: var(--border); border: 2px solid var(--text-muted); }
+.meal-slot-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.meal-slot-item.completed .meal-slot-name { text-decoration: line-through; color: var(--text-muted); }
+.meal-slot-cal {
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.meal-complete-btn {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: var(--accent-pale);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  font-size: 12px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  text-decoration: none;
+  transition: var(--transition-fast);
+  flex-shrink: 0;
+}
+.meal-complete-btn:hover { background: var(--sage); color: white; border-color: var(--sage); }
+.meal-done-chip {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--sage);
+  flex-shrink: 0;
+}
+
+/* ── ALERTS CARD ──────────────────────────────────────────── */
+.alerts-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  animation: fadeUp 0.4s 0.2s ease both;
+}
+.alert-item {
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.alert-item:last-child { border-bottom: none; }
+.alert-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+.alert-dot.emergency  { background: #ef4444; animation: pulse 1.5s infinite; }
+.alert-dot.warning    { background: #f59e0b; }
+.alert-dot.recommendation { background: #3b82f6; }
+.alert-dot.reminder   { background: var(--sage); }
+@keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.4;} }
+.alert-title { font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+.alert-msg   { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+/* ── MEDICINE CARD ────────────────────────────────────────── */
+.med-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.med-item:last-child { border-bottom: none; }
+.med-icon { font-size: 20px; flex-shrink: 0; }
+.med-info { flex: 1; }
+.med-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.med-dosage { font-size: 12px; color: var(--text-muted); }
+.med-toggle-btn {
+  width: 34px; height: 20px;
+  border-radius: 100px;
+  background: var(--border);
+  border: none;
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.med-toggle-btn.taken { background: var(--sage); }
+.med-toggle-thumb {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: white;
+  position: absolute;
+  top: 3px; left: 3px;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.med-toggle-btn.taken .med-toggle-thumb { transform: translateX(14px); }
+
+/* ── WATER TRACKER ────────────────────────────────────────── */
+.water-glasses {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 4px 0;
+}
+.water-glass {
+  font-size: 22px;
+  opacity: 0.25;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.water-glass.filled { opacity: 1; }
+.water-glass:hover  { transform: scale(1.15); }
+
+/* Card shared header */
+.card-h {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.card-h-title {
+  font-family: 'Fraunces', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-h-link {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+}
+.card-h-link:hover { text-decoration: underline; }
+.card-b { padding: 14px 18px; }
+
+/* No data state */
+.no-data {
+  padding: 30px 18px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+.no-data-icon { font-size: 36px; display: block; margin-bottom: 8px; }
+</style>
+
+
+<!-- ════════════════════════════════════════════════════════
+     HERO GREETING
+════════════════════════════════════════════════════════ -->
+{% set hour = today.strftime('%H')|int %}
+{% set greeting = 'Good morning' if hour < 12 else ('Good afternoon' if hour < 17 else 'Good evening') %}
+
+<div class="dash-hero animate-fadeIn">
+  <div class="hero-left">
+    <div class="hero-greeting">{{ greeting }} 👋</div>
+    <div class="hero-name">{{ user.name }}, <span>let's check in.</span></div>
+    <div class="hero-subtitle">{{ today.strftime('%A, %d %B %Y') }} · {{ day_name }}'s plan is ready</div>
+    <div class="hero-tags">
+      {% for cname in conditions[:4] %}
+        <span class="hero-tag">{{ cname }}</span>
+      {% endfor %}
+      {% if user.bmi %}
+        <span class="hero-tag">BMI {{ user.bmi }} · {{ user.bmi_status }}</span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="hero-right">
+    {% if latest_bp %}
+    <div class="hero-stat-box">
+      <span class="hero-stat-val">
+  {{ latest_bp.value_1|int }}/{{ latest_bp.value_2|int }}
+</span>
+      <span class="hero-stat-lbl">Latest BP</span>
+    </div>
+    {% endif %}
+    {% if latest_weight %}
+    <div class="hero-stat-box">
+      <span class="hero-stat-val">{{ latest_weight.value_1 }}kg</span>
+      <span class="hero-stat-lbl">Weight</span>
+    </div>
+    {% endif %}
+    <div class="hero-stat-box">
+      <span class="hero-stat-val">{{ meals_pct }}%</span>
+      <span class="hero-stat-lbl">Meals Done</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     ALERTS (if any)
+════════════════════════════════════════════════════════ -->
+{% if active_alerts %}
+<div style="margin-bottom:22px;">
+  {% for alert in active_alerts %}
+  <div class="alert-banner {{ 'danger' if alert.alert_type == 'emergency' else ('warning' if alert.alert_type == 'warning' else 'info') }} animate-fadeIn" style="animation-delay:{{ loop.index * 0.05 }}s;">
+    <span class="alert-banner-icon">
+      {% if alert.alert_type == 'emergency' %}🚨
+      {% elif alert.alert_type == 'warning' %}⚠️
+      {% else %}💡{% endif %}
+    </span>
+    <div>
+      <div style="font-weight:700; margin-bottom:2px;">{{ alert.title }}</div>
+      <div style="font-size:13px; opacity:0.85;">{{ alert.message }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+
+<!-- ════════════════════════════════════════════════════════
+     TOP STAT CARDS
+════════════════════════════════════════════════════════ -->
+<div class="dash-grid-top">
+
+  <!-- BP Card -->
+  <div class="stat-card bp">
+    <div class="sc-label">❤️ Blood Pressure</div>
+    {% if latest_bp %}
+      <div class="sc-value red">{{ latest_bp.value_1|int }}/{{ latest_bp.value_2|int }}</div>
+      <div class="sc-sub">Pulse: {{ latest_bp.value_3|int if latest_bp.value_3 else '—' }} bpm · {{ latest_bp.recorded_at.strftime('%d %b') }}</div>
+      <span class="sc-badge {% if latest_bp_status == 'Normal' %}badge-success{% elif latest_bp_status == 'Elevated' %}badge-warning{% else %}badge-danger{% endif %}">
+        {{ latest_bp_status }}
+      </span>
+      {% if avg_sys_7 %}
+      <div class="sc-progress">
+        <div class="sc-prog-header"><span>7-day avg</span><span>{{ avg_sys_7|int }}/{{ avg_dia_7|int }}</span></div>
+        <div class="sc-prog-bg">
+          <div class="sc-prog-fill {% if avg_sys_7 < 130 %}prog-fill-green{% elif avg_sys_7 < 150 %}prog-fill-yellow{% else %}prog-fill-red{% endif %}"
+               style="width:{{ [(avg_sys_7 / 200 * 100)|int, 100]|min }}%"></div>
+        </div>
+      </div>
+      {% endif %}
+    {% else %}
+      <div class="no-data">
+        <span class="no-data-icon">💔</span>
+        <a href="{{ url_for('bp.tracker') }}" style="color:var(--accent);font-weight:600;">Add first reading →</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Weight Card -->
+  <div class="stat-card weight">
+    <div class="sc-label">⚖️ Weight</div>
+    {% if latest_weight %}
+      <div class="sc-value purple">{{ latest_weight.value_1 }}kg</div>
+      <div class="sc-sub">
+        {% if weight_to_go and weight_to_go > 0 %}{{ weight_to_go }}kg to target{% else %}Target reached!{% endif %}
+      </div>
+      {% if goals and goals.target_weight_kg %}
+      <span class="sc-badge badge-lavender">🎯 Target: {{ goals.target_weight_kg }}kg</span>
+      <div class="sc-progress">
+        <div class="sc-prog-header"><span>Goal progress</span><span>{{ weight_progress }}%</span></div>
+        <div class="sc-prog-bg">
+          <div class="sc-prog-fill prog-fill-purple" style="width:{{ weight_progress }}%"></div>
+        </div>
+      </div>
+      {% endif %}
+    {% else %}
+      <div class="no-data">
+        <span class="no-data-icon">⚖️</span>
+        <a href="{{ url_for('tracker.weight') }}" style="color:var(--accent);font-weight:600;">Log weight →</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Water Card -->
+  <div class="stat-card water">
+    <div class="sc-label">💧 Water Today</div>
+    <div class="sc-value blue">{{ today_water }}L</div>
+    <div class="sc-sub">Target: {{ water_target }}L daily</div>
+    <span class="sc-badge {% if water_pct >= 100 %}badge-success{% elif water_pct >= 60 %}badge-info{% else %}badge-warning{% endif %}">
+      {{ water_pct }}% complete
+    </span>
+    <div class="sc-progress">
+      <div class="sc-prog-header"><span>Hydration</span><span>{{ today_water }}/{{ water_target }}L</span></div>
+      <div class="sc-prog-bg">
+        <div class="sc-prog-fill prog-fill-blue" style="width:{{ water_pct }}%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Meals Card -->
+  <div class="stat-card meals">
+    <div class="sc-label">🍱 Today's Meals</div>
+    <div class="sc-value green">{{ meals_done }}/{{ meals_total }}</div>
+    <div class="sc-sub">meals completed today</div>
+    <span class="sc-badge {% if meals_pct >= 80 %}badge-success{% elif meals_pct >= 40 %}badge-accent{% else %}badge-warning{% endif %}">
+      {{ meals_pct }}% done
+    </span>
+    <div class="sc-progress">
+      <div class="sc-prog-header"><span>Adherence</span><span>{{ meals_pct }}%</span></div>
+      <div class="sc-prog-bg">
+        <div class="sc-prog-fill prog-fill-green" style="width:{{ meals_pct }}%"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     MAIN SECTION: BP CHART + INSIGHTS
+════════════════════════════════════════════════════════ -->
+<div class="dash-main">
+
+  <!-- BP Chart -->
+  <div class="chart-card">
+    <div class="chart-card-header">
+      <div class="chart-card-title">📈 BP Trend — Last 7 Days</div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#ef4444;"></div>Systolic</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#3b82f6;"></div>Diastolic</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--sage);"></div>Pulse</div>
+      </div>
+    </div>
+    <div class="chart-body">
+      {% if bp_chart_data %}
+        <canvas id="bpTrendChart" style="max-height:240px;"></canvas>
+      {% else %}
+        <div class="no-data" style="padding:40px 20px;">
+          <span class="no-data-icon">📊</span>
+          Track BP twice daily to see your trend chart here.
+          <br><br>
+          <a href="{{ url_for('bp.tracker') }}" class="btn btn-primary btn-sm">Add BP Reading</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Insights -->
+  <div class="insights-card">
+    <div class="card-h">
+      <div class="card-h-title">🧠 Health Insights</div>
+      <span style="font-size:11px; color:var(--text-muted); font-weight:500;">This week</span>
+    </div>
+    {% if insights %}
+      {% for insight in insights %}
+      <div class="insight-item animate-fadeIn" style="animation-delay:{{ loop.index * 0.1 }}s;">
+        <div class="insight-icon">{{ insight.icon }}</div>
+        <div>
+          <div class="insight-text">{{ insight.insight_text }}</div>
+          <div class="insight-dir dir-{{ insight.direction }}">
+            {% if insight.direction == 'improving' %}↑ Improving
+            {% elif insight.direction == 'worsening' %}↓ Needs attention
+            {% else %}→ Stable{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-data">
+        <span class="no-data-icon">💡</span>
+        Track your health metrics to unlock personalised insights.
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     BOTTOM: TODAY'S MEALS + ALERTS + MEDICINE
+════════════════════════════════════════════════════════ -->
+<div class="dash-bottom">
+
+  <!-- Today's Meals -->
+  <div class="meals-card">
+    <div class="card-h">
+      <div class="card-h-title">🍱 Today's Plan</div>
+      <a href="{{ url_for('meal.meals') }}" class="card-h-link">View all →</a>
+    </div>
+    {% if today_meals %}
+      {% set slot_times = {
+        'Morning Drink': '6:00 am',
+        'Breakfast':     '7–9 am',
+        'Lunch':         '1–2 pm',
+        'Snacks':        '4–5 pm',
+        'Dinner':        '7–8 pm'
+      } %}
+      {% for meal in today_meals %}
+      <div class="meal-slot-item {% if meal.completed %}completed{% endif %}">
+        <div class="meal-slot-time">{{ slot_times.get(meal.meal_slot, meal.meal_slot) }}</div>
+        <div class="meal-slot-dot {% if meal.completed %}done{% else %}pending{% endif %}"></div>
+        <div class="meal-slot-name">{{ meal.recipe.name }}</div>
+        <div class="meal-slot-cal">{{ meal.recipe.calories }}cal</div>
+        {% if meal.completed %}
+          <div class="meal-done-chip">✓</div>
+        {% else %}
+          <a href="{{ url_for('meal.meal_done', item_id=meal.id) }}" class="meal-complete-btn" title="Mark done">✓</a>
+        {% endif %}
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-data">
+        <span class="no-data-icon">🍽️</span>
+        No plan for today.
+        <br><br>
+        <a href="{{ url_for('meal.generate_weekly_meals') }}" class="btn btn-primary btn-sm">Generate Plan</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Alerts -->
+  <div class="alerts-card">
+    <div class="card-h">
+      <div class="card-h-title">🔔 Active Alerts</div>
+      <a href="{{ url_for('alert.index') }}" class="card-h-link">All alerts →</a>
+    </div>
+    {% if active_alerts %}
+      {% for alert in active_alerts %}
+      <div class="alert-item">
+        <div class="alert-dot {{ alert.alert_type }}"></div>
+        <div>
+          <div class="alert-title">{{ alert.title }}</div>
+          <div class="alert-msg">{{ alert.message[:100] }}{% if alert.message|length > 100 %}...{% endif %}</div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-data">
+        <span class="no-data-icon">✅</span>
+        No active alerts. Everything looks good!
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Medicine -->
+  <div class="chart-card">
+    <div class="card-h">
+      <div class="card-h-title">💊 Medicine Today</div>
+      {% if meds_total > 0 %}
+      <span class="sc-badge {% if meds_taken == meds_total %}badge-success{% else %}badge-warning{% endif %}">
+        {{ meds_taken }}/{{ meds_total }} taken
+      </span>
+      {% endif %}
+    </div>
+    {% if medicines_today %}
+      {% for m in medicines_today %}
+      <div class="med-item">
+        <div class="med-icon">💊</div>
+        <div class="med-info">
+          <div class="med-name">{{ m.medicine.name }}</div>
+          <div class="med-dosage">{{ m.medicine.dosage or '' }} · {{ m.medicine.timing or '—' }}</div>
+        </div>
+        <button
+          class="med-toggle-btn {% if m.taken %}taken{% endif %}"
+          onclick="toggleMedicine({{ m.medicine.id }}, this)"
+          title="{{ 'Mark as not taken' if m.taken else 'Mark as taken' }}"
+        >
+          <div class="med-toggle-thumb"></div>
+        </button>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-data">
+        <span class="no-data-icon">💊</span>
+        No medicines added yet.
+        <br><br>
+        <a href="{{ url_for('profile.index') }}" class="card-h-link">Add medicine →</a>
+      </div>
+    {% endif %}
+  </div>
+
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════
+     NUTRITION SUMMARY ROW
+════════════════════════════════════════════════════════ -->
+{% if today_nutrition %}
+<div class="chart-card animate-on-scroll" style="margin-bottom:24px;">
+  <div class="card-h">
+    <div class="card-h-title">🥗 Today's Nutrition</div>
+    <a href="{{ url_for('nutrition.dashboard') }}" class="card-h-link">Full details →</a>
+  </div>
+  <div class="card-b">
+    <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:14px;">
+      {% set nutri = [
+        ('🔥', 'Calories', today_nutrition.total_calories|int, calorie_target, 'kcal'),
+        ('💪', 'Protein',  today_nutrition.total_protein|round(0)|int, protein_target, 'g'),
+        ('🍚', 'Carbs',    today_nutrition.total_carbs|round(0)|int,   250, 'g'),
+        ('🥑', 'Fats',     today_nutrition.total_fats|round(0)|int,    65,  'g'),
+        ('🌾', 'Fiber',    today_nutrition.total_fiber|round(0)|int,   30,  'g'),
+      ] %}
+      {% for icon, label, val, target, unit in nutri %}
+      <div style="text-align:center;">
+        <div style="font-size:20px; margin-bottom:6px;">{{ icon }}</div>
+        <div style="font-family:'DM Mono',monospace; font-size:18px; font-weight:500; color:var(--text-primary);">{{ val }}{{ unit }}</div>
+        <div style="font-size:10px; text-transform:uppercase; letter-spacing:0.6px; color:var(--text-muted); margin:4px 0 8px;">{{ label }}</div>
+        {% set pct = [(val / target * 100)|int, 100]|min if target else 0 %}
+        <div class="sc-prog-bg">
+          <div class="sc-prog-fill {% if pct >= 80 %}prog-fill-green{% elif pct >= 50 %}prog-fill-yellow{% else %}prog-fill-red{% endif %}"
+               style="width:{{ pct }}%"></div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+// ── BP Trend Chart ────────────────────────────────────────
+const bpData = {{ bp_chart_data | tojson }};
+
+if (bpData.length && document.getElementById('bpTrendChart')) {
+  new Chart(document.getElementById('bpTrendChart'), {
+    type: 'line',
+    data: {
+      labels: bpData.map(d => d.day),
+      datasets: [
+        {
+          label: 'Systolic',
+          data: bpData.map(d => d.sys),
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239,68,68,0.07)',
+          borderWidth: 2.5,
+          tension: 0.4,
+          pointBackgroundColor: '#ef4444',
+          pointRadius: 4,
+          fill: true,
+        },
+        {
+          label: 'Diastolic',
+          data: bpData.map(d => d.dia),
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.05)',
+          borderWidth: 2.5,
+          tension: 0.4,
+          pointBackgroundColor: '#3b82f6',
+          pointRadius: 4,
+          fill: true,
+        },
+        {
+          label: 'Pulse',
+          data: bpData.map(d => d.pulse),
+          borderColor: 'var(--sage, #61b390)',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          borderDash: [5,4],
+          tension: 0.4,
+          pointRadius: 3,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#142d4c',
+          titleColor: '#e8edf5',
+          bodyColor: '#adc4e0',
+          padding: 12,
+          cornerRadius: 10,
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: 'var(--text-muted, #6b7280)', font: { size: 11 } } },
+        y: {
+          beginAtZero: false, min: 50,
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: { color: 'var(--text-muted, #6b7280)', font: { size: 11 } }
+        }
+      }
+    }
+  });
+}
+
+// ── Medicine Toggle ────────────────────────────────────────
+async function toggleMedicine(medId, btn) {
+  try {
+    const resp = await fetch(`/profile/medicine/log/${medId}`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCsrfToken() }
+    });
+    const data = await resp.json();
+    if (data.success) {
+      if (data.taken) {
+        btn.classList.add('taken');
+        btn.title = 'Mark as not taken';
+      } else {
+        btn.classList.remove('taken');
+        btn.title = 'Mark as taken';
+      }
+    }
+  } catch(e) { console.error('Medicine toggle failed', e); }
+}
+
+function getCsrfToken() {
+  const meta = document.querySelector('meta[name="csrf-token"]');
+  if (meta) return meta.content;
+  const inp = document.querySelector('input[name="csrf_token"]');
+  return inp ? inp.value : '';
+}
+</script>
+{% endblock %}

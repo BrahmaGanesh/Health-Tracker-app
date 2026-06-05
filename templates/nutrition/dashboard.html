@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+{% block title %}Nutrition | HealthTrack{% endblock %}
+{% block page_title %}Nutrition Dashboard{% endblock %}
+
+{% block content %}
+<style>
+.nutri-hero{background:linear-gradient(135deg,#064e3b,#065f46,#047857);border-radius:var(--radius-lg);padding:28px 32px;color:white;margin-bottom:24px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.nutri-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/svg%3E");}
+.nutri-hero::after{content:'🥗';position:absolute;right:36px;top:50%;transform:translateY(-50%);font-size:120px;opacity:0.09;}
+.hero-left{position:relative;}
+.hero-eyebrow{display:inline-block;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:100px;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+.hero-title{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,34px);font-weight:900;margin-bottom:6px;}
+.hero-sub{font-size:14px;opacity:0.78;}
+.hero-score{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:14px 22px;text-align:center;position:relative;}
+.hs-val{font-family:'DM Mono',monospace;font-size:32px;font-weight:500;display:block;color:#9fd3c7;}
+.hs-lbl{font-size:11px;opacity:0.65;text-transform:uppercase;letter-spacing:0.8px;}
+
+.top-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px;}
+@media(max-width:800px){.top-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.top-grid{grid-template-columns:1fr;}}
+
+.nutri-card{background:var(--card-bg);border-radius:var(--radius);padding:20px;border:1px solid var(--border);box-shadow:var(--shadow-sm);transition:var(--transition);animation:fadeUp 0.4s ease both;}
+.nutri-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);}
+.nc-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:10px;}
+.nc-val{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;line-height:1;margin-bottom:5px;}
+.nc-sub{font-size:12px;color:var(--text-muted);margin-bottom:10px;}
+.nc-prog-bg{height:7px;background:var(--border);border-radius:100px;overflow:hidden;}
+.nc-prog-fill{height:100%;border-radius:100px;transition:width 1.2s cubic-bezier(0.34,1.56,0.64,1);}
+
+.main-grid{display:grid;grid-template-columns:1fr 320px;gap:22px;margin-bottom:24px;}
+@media(max-width:960px){.main-grid{grid-template-columns:1fr;}}
+
+.card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;animation:fadeUp 0.4s 0.1s ease both;}
+.card-hdr{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.card-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--text-primary);}
+.card-body{padding:18px 22px;}
+
+.detail-row{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);}
+.detail-row:last-child{border-bottom:none;}
+.detail-icon{font-size:20px;width:32px;text-align:center;flex-shrink:0;}
+.detail-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);width:80px;flex-shrink:0;}
+.detail-val{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text-primary);}
+.detail-bar{flex:1;}
+.detail-bar-bg{height:6px;background:var(--border);border-radius:100px;overflow:hidden;}
+.detail-bar-fill{height:100%;border-radius:100px;transition:width 1.2s cubic-bezier(0.34,1.56,0.64,1);}
+.detail-pct{font-size:11px;font-weight:600;color:var(--text-muted);flex-shrink:0;width:38px;text-align:right;}
+
+.adherence-card{background:linear-gradient(135deg,var(--navy),#1e3f6e,var(--violet));color:white;border-radius:var(--radius);padding:22px 26px;margin-bottom:22px;animation:fadeUp 0.4s 0.15s ease both;}
+.adh-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;margin-bottom:14px;}
+.adh-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+@media(max-width:600px){.adh-grid{grid-template-columns:1fr 1fr;}}
+.adh-item{background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.15);border-radius:14px;padding:14px;text-align:center;}
+.adh-val{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;color:#9fd3c7;display:block;margin-bottom:3px;}
+.adh-lbl{font-size:10px;opacity:0.65;text-transform:uppercase;letter-spacing:0.6px;}
+
+.sodium-status{border-radius:var(--radius-sm);padding:12px 16px;margin-top:16px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;}
+.sodium-status.good{background:#dcfce7;color:#166534;}
+.sodium-status.moderate{background:#fef3c7;color:#92400e;}
+.sodium-status.high{background:#fee2e2;color:#991b1b;}
+
+.no-data{padding:40px;text-align:center;color:var(--text-muted);}
+.no-data-icon{font-size:40px;display:block;margin-bottom:10px;}
+</style>
+
+<!-- HERO -->
+<div class="nutri-hero animate-fadeIn">
+  <div class="hero-left">
+    <div class="hero-eyebrow">🥗 Today's Nutrition</div>
+    <h1 class="hero-title">Nutrition Dashboard</h1>
+    <p class="hero-sub">{{ today.strftime('%A, %d %B %Y') }} · Based on completed meals.</p>
+  </div>
+  <div class="hero-score">
+    <span class="hs-val">{{ avg_score }}%</span>
+    <span class="hs-lbl">Today's Health Score</span>
+  </div>
+</div>
+
+<!-- TOP STAT CARDS -->
+<div class="top-grid">
+  <div class="nutri-card" style="border-top:3px solid #ef4444;">
+    <div class="nc-lbl">🔥 Calories</div>
+    <div class="nc-val" style="color:#ef4444;">{{ total_calories }}</div>
+    <div class="nc-sub">of {{ calorie_target }} kcal target</div>
+    <div class="nc-prog-bg">
+      <div class="nc-prog-fill {% if cal_pct >= 80 %}prog-fill-green{% elif cal_pct >= 50 %}prog-fill-yellow{% else %}prog-fill-red{% endif %}" style="width:{{ cal_pct }}%;"></div>
+    </div>
+  </div>
+  <div class="nutri-card" style="border-top:3px solid var(--sage);">
+    <div class="nc-lbl">💪 Protein</div>
+    <div class="nc-val" style="color:var(--sage);">{{ total_protein }}g</div>
+    <div class="nc-sub">of {{ protein_target }}g target</div>
+    <div class="nc-prog-bg">
+      <div class="nc-prog-fill prog-fill-green" style="width:{{ pro_pct }}%;"></div>
+    </div>
+  </div>
+  <div class="nutri-card" style="border-top:3px solid var(--violet);">
+    <div class="nc-lbl">🌾 Fiber</div>
+    <div class="nc-val" style="color:var(--violet);">{{ total_fiber }}g</div>
+    <div class="nc-sub">of 30g daily target</div>
+    <div class="nc-prog-bg">
+      <div class="nc-prog-fill prog-fill-purple" style="width:{{ fiber_pct }}%;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADHERENCE STRIP -->
+<div class="adherence-card">
+  <div class="adh-title">📊 7-Day Averages</div>
+  <div class="adh-grid">
+    <div class="adh-item">
+      <span class="adh-val">{{ avg_7_cal }}</span>
+      <span class="adh-lbl">Avg Calories</span>
+    </div>
+    <div class="adh-item">
+      <span class="adh-val">{{ avg_7_pro }}g</span>
+      <span class="adh-lbl">Avg Protein</span>
+    </div>
+    <div class="adh-item">
+      <span class="adh-val">{{ avg_7_fiber }}g</span>
+      <span class="adh-lbl">Avg Fiber</span>
+    </div>
+    <div class="adh-item">
+      <span class="adh-val">{{ adherence_pct }}%</span>
+      <span class="adh-lbl">30d Adherence</span>
+    </div>
+    <div class="adh-item">
+      <span class="adh-val">{{ days_on_track }}</span>
+      <span class="adh-lbl">Days on Track</span>
+    </div>
+    <div class="adh-item">
+      <span class="adh-val">{{ total_sodium }}mg</span>
+      <span class="adh-lbl">Sodium Today</span>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN GRID: DETAILED + CHART -->
+<div class="main-grid">
+
+  <!-- Detailed macro breakdown -->
+  <div class="card">
+    <div class="card-hdr">
+      <div class="card-title">🍽️ Today's Macros</div>
+      <span style="font-size:12px;color:var(--text-muted);">Target based on your conditions</span>
+    </div>
+    <div class="card-body">
+
+      {% set macros = [
+        ('🔥','Calories',  total_calories, calorie_target, 'linear-gradient(90deg,#ef4444,#dc2626)'),
+        ('💪','Protein',   total_protein,  protein_target, 'linear-gradient(90deg,var(--sage),var(--mint))'),
+        ('🍚','Carbs',     total_carbs,    250,            'linear-gradient(90deg,#3b82f6,#60a5fa)'),
+        ('🥑','Fats',      total_fats,     65,             'linear-gradient(90deg,#f59e0b,#fbbf24)'),
+        ('🌾','Fiber',     total_fiber,    30,             'linear-gradient(90deg,var(--violet),#7c3aed)'),
+      ] %}
+
+      {% for icon, label, val, target, color in macros %}
+      {% set pct = [(val / target * 100)|int, 100]|min if target else 0 %}
+      <div class="detail-row">
+        <div class="detail-icon">{{ icon }}</div>
+        <div class="detail-label">{{ label }}</div>
+        <div class="detail-val">
+          {{ val|round(1) }}{% if label == 'Calories' %} kcal{% else %}g{% endif %}
+        </div>
+        <div class="detail-bar">
+          <div class="detail-bar-bg">
+            <div class="detail-bar-fill" style="width:{{ pct }}%;background:{{ color }};"></div>
+          </div>
+        </div>
+        <div class="detail-pct">{{ pct }}%</div>
+      </div>
+      {% endfor %}
+
+      <!-- Sodium special row -->
+      <div class="detail-row">
+        <div class="detail-icon">🧂</div>
+        <div class="detail-label">Sodium</div>
+        <div class="detail-val" style="{% if total_sodium > 2000 %}color:#ef4444;{% endif %}">
+          {{ total_sodium }}mg
+        </div>
+        <div class="detail-bar">
+          <div class="detail-bar-bg">
+            <div class="detail-bar-fill" style="width:{{ sodium_pct }}%;background:{% if sodium_pct > 100 %}#ef4444{% elif sodium_pct > 75 %}#f59e0b{% else %}var(--sage){% endif %};"></div>
+          </div>
+        </div>
+        <div class="detail-pct">{{ sodium_pct }}%</div>
+      </div>
+
+      <!-- Sodium status -->
+      <div class="sodium-status {% if total_sodium < 1500 %}good{% elif total_sodium < 2000 %}moderate{% else %}high{% endif %}">
+        {% if total_sodium < 1500 %}✅ Low sodium — excellent for BP management.
+        {% elif total_sodium < 2000 %}⚠️ Moderate sodium — within safe range.
+        {% else %}🔴 High sodium — {{ total_sodium - 2000 }}mg over limit. Avoid adding salt tomorrow.{% endif %}
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Right: Macro donut + tips -->
+  <div>
+    <div class="card" style="margin-bottom:22px;">
+      <div class="card-hdr"><div class="card-title">🍕 Macro Split</div></div>
+      <div class="card-body">
+        {% if total_calories > 0 %}
+        <canvas id="macroDonut" style="max-height:200px;"></canvas>
+        {% else %}
+        <div class="no-data"><span class="no-data-icon">🍽️</span>Complete meals to see macro split.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">💡 Today's Tips</div></div>
+      <div class="card-body" style="display:flex;flex-direction:column;gap:10px;">
+        {% if total_protein < protein_target * 0.5 %}
+        <div style="background:#fef3c7;border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#92400e;">
+          💪 Low protein — add dal, eggs, or paneer to your next meal.
+        </div>
+        {% endif %}
+        {% if total_sodium > 2000 %}
+        <div style="background:#fee2e2;border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#991b1b;">
+          🧂 High sodium — skip added salt and avoid packaged food tonight.
+        </div>
+        {% endif %}
+        {% if total_fiber < 15 %}
+        <div style="background:#ede9fe;border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#4c1d95;">
+          🌾 Low fiber — eat a bowl of sprouts or fruits for your next snack.
+        </div>
+        {% endif %}
+        {% if total_calories < calorie_target * 0.5 %}
+        <div style="background:#dbeafe;border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#1e40af;">
+          🔥 Under eating — ensure you complete all 5 meal slots today.
+        </div>
+        {% endif %}
+        {% if total_calories >= calorie_target * 0.85 and total_protein >= protein_target * 0.8 %}
+        <div style="background:#dcfce7;border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#166534;">
+          ✅ Great nutrition day! Keep this consistency for best health outcomes.
+        </div>
+        {% endif %}
+        <div style="background:var(--bg);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:var(--text-muted);">
+          💧 Aim for {{ current_user.goals.target_water_litres if current_user.goals else 2.5 }}L of water today to support nutrient absorption.
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 7-DAY NUTRITION TREND CHART -->
+<div class="card" style="margin-bottom:24px;">
+  <div class="card-hdr">
+    <div class="card-title">📈 7-Day Nutrition Trend</div>
+    <div style="display:flex;gap:12px;">
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--text-muted);">
+        <div style="width:8px;height:8px;border-radius:50%;background:#ef4444;"></div>Calories
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--text-muted);">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--sage);"></div>Protein
+      </div>
+    </div>
+  </div>
+  <div style="padding:18px 20px 20px;">
+    {% if week_chart %}
+    <canvas id="nutriTrendChart" style="max-height:220px;"></canvas>
+    {% else %}
+    <div class="no-data"><span class="no-data-icon">📊</span>Complete meals this week to see your nutrition trend.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- SODIUM TREND -->
+{% if sodium_data %}
+<div class="card" style="margin-bottom:24px;">
+  <div class="card-hdr">
+    <div class="card-title">🧂 Sodium Trend (7 Days)</div>
+    <span style="font-size:12px;color:var(--text-muted);">Safe limit: 2000mg/day</span>
+  </div>
+  <div style="padding:18px 20px 20px;">
+    <canvas id="sodiumChart" style="max-height:180px;"></canvas>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const weekData   = {{ week_chart   | tojson }};
+const sodiumData = {{ sodium_data  | tojson }};
+const protein_g  = {{ total_protein }};
+const carbs_g    = {{ total_carbs }};
+const fats_g     = {{ total_fats }};
+
+// Nutrition trend chart
+if (weekData.length) {
+  HealthCharts.createNutritionChart('nutriTrendChart', weekData);
+}
+
+// Macro donut
+if (protein_g > 0 || carbs_g > 0 || fats_g > 0) {
+  HealthCharts.createMacroDonut('macroDonut', protein_g, carbs_g, fats_g);
+}
+
+// Sodium bar chart
+if (sodiumData.length && document.getElementById('sodiumChart')) {
+  const colors = sodiumData.map(d =>
+    (d.sodium || 0) > 2000 ? 'rgba(239,68,68,0.8)' :
+    (d.sodium || 0) > 1500 ? 'rgba(245,158,11,0.8)' :
+    'rgba(97,179,144,0.8)'
+  );
+  new Chart(document.getElementById('sodiumChart'), {
+    type: 'bar',
+    data: {
+      labels: sodiumData.map(d => d.day),
+      datasets: [
+        {
+          label: 'Sodium (mg)',
+          data: sodiumData.map(d => d.sodium || 0),
+          backgroundColor: colors,
+          borderRadius: 8,
+          borderColor: colors.map(c => c.replace('0.8','1')),
+          borderWidth: 1,
+        },
+        {
+          label: 'Safe Limit',
+          data: sodiumData.map(() => 2000),
+          type: 'line',
+          borderColor: '#ef4444',
+          borderDash: [6,4],
+          borderWidth: 1.5,
+          pointRadius: 0,
+          fill: false,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#142d4c',
+          titleColor: '#e8edf5',
+          bodyColor: '#adc4e0',
+          padding: 12, cornerRadius: 10,
+          callbacks: {
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y} mg`
+          }
+        }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { color: '#6b7280', font: { size: 11 } } },
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: { color: '#6b7280', font: { size: 11 }, callback: v => v + 'mg' }
+        }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}

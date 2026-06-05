@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}Step 2 of 5 — Body Measurements | HealthTrack{% endblock %}
+{% block content %}
+<style>
+.onboard-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;background:var(--bg);}
+.onboard-box{width:100%;max-width:560px;animation:fadeUp 0.5s ease both;}
+.ob-progress-wrap{margin-bottom:32px;}
+.ob-progress-steps{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:relative;}
+.ob-progress-steps::before{content:'';position:absolute;top:14px;left:14px;right:14px;height:2px;background:var(--border);z-index:0;}
+.ob-step-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--card-bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text-muted);position:relative;z-index:1;transition:all 0.3s ease;}
+.ob-step-dot.done{background:var(--sage);border-color:var(--sage);color:white;}
+.ob-step-dot.active{background:var(--navy);border-color:var(--navy);color:white;box-shadow:0 0 0 4px var(--accent-glow);}
+.ob-progress-bar{height:4px;background:var(--border);border-radius:100px;overflow:hidden;}
+.ob-progress-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--mint));border-radius:100px;transition:width 0.6s cubic-bezier(0.34,1.56,0.64,1);}
+.ob-progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-top:8px;font-weight:500;}
+.ob-card{background:var(--card-bg);border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow);padding:36px 40px 40px;}
+@media(max-width:560px){.ob-card{padding:24px 20px 28px;}}
+.ob-step-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.ob-title{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,30px);font-weight:900;color:var(--text-primary);margin-bottom:6px;}
+.ob-subtitle{font-size:14px;color:var(--text-muted);margin-bottom:30px;line-height:1.6;}
+.ob-form-group{margin-bottom:20px;}
+.ob-label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:8px;}
+.ob-input{width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text-primary);background:var(--input-bg);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+.ob-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);background:var(--card-bg);}
+.bmi-preview{background:var(--accent-pale);border-radius:var(--radius-xs);padding:12px 16px;font-size:14px;font-weight:600;color:var(--accent-dark);margin-top:16px;display:none;border:1px solid var(--accent-border);}
+.bmi-preview.show{display:flex;align-items:center;gap:10px;}
+.ob-nav{display:flex;justify-content:space-between;gap:12px;margin-top:32px;}
+.ob-btn-back{background:var(--card-bg);color:var(--text-muted);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:6px;transition:all 0.18s;}
+.ob-btn-back:hover{border-color:var(--accent);color:var(--accent);}
+.ob-btn-next{background:linear-gradient(135deg,var(--sage),var(--mint));color:var(--navy);border:none;border-radius:var(--radius-sm);padding:13px 32px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform 0.18s,box-shadow 0.18s;}
+.ob-btn-next:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(97,179,144,0.35);}
+.input-with-unit{position:relative;}
+.input-unit{position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:700;color:var(--text-muted);pointer-events:none;}
+</style>
+
+<div class="onboard-wrap">
+  <div class="onboard-box">
+    <div class="ob-progress-wrap">
+      <div class="ob-progress-steps">
+        <div class="ob-step-dot done">✓</div>
+        <div class="ob-step-dot active">2</div>
+        <div class="ob-step-dot">3</div>
+        <div class="ob-step-dot">4</div>
+        <div class="ob-step-dot">5</div>
+      </div>
+      <div class="ob-progress-bar"><div class="ob-progress-fill" style="width:40%"></div></div>
+      <div class="ob-progress-label"><span>Step 2 of 5</span><span>Body Measurements</span></div>
+    </div>
+    <div class="ob-card">
+      <div class="ob-step-label">📏 Step 2 — Your Body</div>
+      <h2 class="ob-title">Height & Weight</h2>
+      <p class="ob-subtitle">Used to calculate your BMI, daily calorie target, and personalised nutrition plan.</p>
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat,msg in messages %}
+        <div style="background:var(--danger-light);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;font-weight:600;color:#991b1b;">⚠️ {{ msg }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+      <form method="POST" action="{{ url_for('profile.onboarding_step2') }}">
+        <div class="ob-form-group">
+          <label class="ob-label" for="height_cm">Height</label>
+          <div class="input-with-unit">
+            <input type="number" id="height_cm" name="height_cm" class="ob-input" placeholder="e.g. 165" value="{{ height or '' }}" min="100" max="250" step="0.1" style="padding-right:48px;" oninput="computeBMI()" required>
+            <span class="input-unit">cm</span>
+          </div>
+        </div>
+        <div class="ob-form-group">
+          <label class="ob-label" for="weight_kg">Current Weight</label>
+          <div class="input-with-unit">
+            <input type="number" id="weight_kg" name="weight_kg" class="ob-input" placeholder="e.g. 80" value="{{ weight or '' }}" min="20" max="300" step="0.1" style="padding-right:44px;" oninput="computeBMI()" required>
+            <span class="input-unit">kg</span>
+          </div>
+        </div>
+        <div class="bmi-preview" id="bmiPreview">
+          <span id="bmiEmoji">📊</span>
+          <span id="bmiText"></span>
+        </div>
+        <div class="ob-nav">
+          <a href="{{ url_for('profile.onboarding_step1') }}" class="ob-btn-back">← Back</a>
+          <button type="submit" class="ob-btn-next">Next — Conditions →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+function computeBMI() {
+  const h = parseFloat(document.getElementById('height_cm').value);
+  const w = parseFloat(document.getElementById('weight_kg').value);
+  const preview = document.getElementById('bmiPreview');
+  const text    = document.getElementById('bmiText');
+  const emoji   = document.getElementById('bmiEmoji');
+  if (!h || !w || h < 100 || w < 20) { preview.classList.remove('show'); return; }
+  const bmi = (w / Math.pow(h/100, 2)).toFixed(1);
+  let status = '', em = '📊';
+  if (bmi < 18.5)      { status='Underweight'; em='⬇️'; }
+  else if (bmi < 25)   { status='Normal weight'; em='✅'; }
+  else if (bmi < 30)   { status='Overweight'; em='⚠️'; }
+  else if (bmi < 35)   { status='Obese Class I'; em='🔴'; }
+  else                  { status='Obese Class II+'; em='🔴'; }
+  text.textContent = `BMI: ${bmi} — ${status}`;
+  emoji.textContent = em;
+  preview.classList.add('show');
+}
+computeBMI();
+</script>
+{% endblock %}

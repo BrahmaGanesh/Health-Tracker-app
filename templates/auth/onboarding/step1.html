@@ -1,0 +1,351 @@
+{% extends "base.html" %}
+{% block title %}Step 1 of 5 — Personal Details | HealthTrack{% endblock %}
+
+{% block content %}
+<style>
+/* ── ONBOARDING SHELL ─────────────────────────────────────── */
+.onboard-wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: var(--bg);
+}
+.onboard-box {
+  width: 100%;
+  max-width: 560px;
+  animation: fadeUp 0.5s ease both;
+}
+
+/* Progress bar */
+.ob-progress-wrap { margin-bottom: 32px; }
+.ob-progress-steps {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  position: relative;
+}
+.ob-progress-steps::before {
+  content: '';
+  position: absolute;
+  top: 14px; left: 14px; right: 14px;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+.ob-step-dot {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--card-bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+.ob-step-dot.done {
+  background: var(--sage);
+  border-color: var(--sage);
+  color: white;
+}
+.ob-step-dot.active {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: white;
+  box-shadow: 0 0 0 4px var(--accent-glow);
+}
+.ob-progress-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.ob-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--sage), var(--mint));
+  border-radius: 100px;
+  transition: width 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+.ob-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+/* Card */
+.ob-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 36px 40px 40px;
+}
+@media (max-width: 560px) { .ob-card { padding: 24px 20px 28px; } }
+
+.ob-step-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+.ob-title {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+.ob-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+/* Form */
+.ob-form-group { margin-bottom: 20px; }
+.ob-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.ob-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 13px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  color: var(--text-primary);
+  background: var(--input-bg);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.ob-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: var(--card-bg);
+}
+
+/* Gender selector */
+.gender-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.gender-option { position: relative; }
+.gender-option input[type="radio"] {
+  position: absolute;
+  opacity: 0; width: 0; height: 0;
+}
+.gender-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px 12px;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border);
+  background: var(--input-bg);
+  cursor: pointer;
+  transition: all 0.18s;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.gender-btn .gender-icon { font-size: 24px; }
+.gender-option input:checked + .gender-btn {
+  border-color: var(--accent);
+  background: var(--accent-pale);
+  color: var(--accent-dark);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+.gender-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Age preview */
+.age-preview {
+  background: var(--accent-pale);
+  border-radius: var(--radius-xs);
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-dark);
+  margin-top: 8px;
+  display: none;
+}
+.age-preview.show { display: block; }
+
+/* Navigation buttons */
+.ob-nav {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 32px;
+}
+.ob-btn-next {
+  background: linear-gradient(135deg, var(--sage), var(--mint));
+  color: var(--navy);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 13px 32px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  transition: transform 0.18s, box-shadow 0.18s;
+}
+.ob-btn-next:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(97,179,144,0.35);
+}
+</style>
+
+<div class="onboard-wrap">
+  <div class="onboard-box">
+
+    <!-- Progress -->
+    <div class="ob-progress-wrap">
+      <div class="ob-progress-steps">
+        <div class="ob-step-dot active">1</div>
+        <div class="ob-step-dot">2</div>
+        <div class="ob-step-dot">3</div>
+        <div class="ob-step-dot">4</div>
+        <div class="ob-step-dot">5</div>
+      </div>
+      <div class="ob-progress-bar">
+        <div class="ob-progress-fill" style="width: 20%"></div>
+      </div>
+      <div class="ob-progress-label">
+        <span>Step 1 of 5</span>
+        <span>Personal Details</span>
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div class="ob-card">
+
+      <div class="ob-step-label">👤 Step 1 — About You</div>
+      <h2 class="ob-title">Tell us about yourself</h2>
+      <p class="ob-subtitle">
+        This helps us calculate your personalised calorie targets and health recommendations.
+      </p>
+
+      <!-- Flash messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for cat, msg in messages %}
+          <div style="background:var(--danger-light); border-radius:10px; padding:10px 14px;
+                      margin-bottom:16px; font-size:13px; font-weight:600; color:#991b1b;">
+            ⚠️ {{ msg }}
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('profile.onboarding_step1') }}">
+
+        <!-- Full Name -->
+        <div class="ob-form-group">
+          <label class="ob-label" for="name">Full Name</label>
+          <input
+            type="text" id="name" name="name"
+            class="ob-input"
+            placeholder="e.g. Priya Sharma"
+            value="{{ name or '' }}"
+            required
+          >
+        </div>
+
+        <!-- Gender -->
+        <div class="ob-form-group">
+          <label class="ob-label">Gender</label>
+          <div class="gender-grid">
+            <label class="gender-option">
+              <input type="radio" name="gender" value="female" {% if gender == 'female' %}checked{% endif %}>
+              <div class="gender-btn">
+                <span class="gender-icon">👩</span>
+                Female
+              </div>
+            </label>
+            <label class="gender-option">
+              <input type="radio" name="gender" value="male" {% if gender == 'male' %}checked{% endif %}>
+              <div class="gender-btn">
+                <span class="gender-icon">👨</span>
+                Male
+              </div>
+            </label>
+            <label class="gender-option">
+              <input type="radio" name="gender" value="other" {% if gender == 'other' %}checked{% endif %}>
+              <div class="gender-btn">
+                <span class="gender-icon">🧑</span>
+                Other
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Date of Birth -->
+        <div class="ob-form-group">
+          <label class="ob-label" for="date_of_birth">Date of Birth</label>
+          <input
+            type="date" id="date_of_birth" name="date_of_birth"
+            class="ob-input"
+            value="{{ dob or '' }}"
+            max="{{ today.strftime('%Y-%m-%d') if today is defined else '' }}"
+            required
+            oninput="showAge(this.value)"
+          >
+          <div class="age-preview" id="agePreview"></div>
+        </div>
+
+        <!-- Next -->
+        <div class="ob-nav">
+          <button type="submit" class="ob-btn-next">
+            Next — Measurements →
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function showAge(dobVal) {
+  const preview = document.getElementById('agePreview');
+  if (!dobVal) { preview.classList.remove('show'); return; }
+  const dob   = new Date(dobVal);
+  const today = new Date();
+  const age   = Math.floor((today - dob) / (365.25 * 24 * 60 * 60 * 1000));
+  if (age > 0 && age < 120) {
+    preview.textContent = `✓ Age: ${age} years`;
+    preview.classList.add('show');
+  } else {
+    preview.classList.remove('show');
+  }
+}
+// Init on load
+const dobInput = document.getElementById('date_of_birth');
+if (dobInput && dobInput.value) showAge(dobInput.value);
+</script>
+{% endblock %}

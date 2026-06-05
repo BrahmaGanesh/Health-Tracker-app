@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Step 3 of 5 — Health Conditions | HealthTrack{% endblock %}
+{% block content %}
+<style>
+.onboard-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;background:var(--bg);}
+.onboard-box{width:100%;max-width:640px;animation:fadeUp 0.5s ease both;}
+.ob-progress-wrap{margin-bottom:32px;}
+.ob-progress-steps{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:relative;}
+.ob-progress-steps::before{content:'';position:absolute;top:14px;left:14px;right:14px;height:2px;background:var(--border);z-index:0;}
+.ob-step-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--card-bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text-muted);position:relative;z-index:1;transition:all 0.3s ease;}
+.ob-step-dot.done{background:var(--sage);border-color:var(--sage);color:white;}
+.ob-step-dot.active{background:var(--navy);border-color:var(--navy);color:white;box-shadow:0 0 0 4px var(--accent-glow);}
+.ob-progress-bar{height:4px;background:var(--border);border-radius:100px;overflow:hidden;}
+.ob-progress-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--mint));border-radius:100px;}
+.ob-progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-top:8px;font-weight:500;}
+.ob-card{background:var(--card-bg);border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow);padding:36px 40px 40px;}
+@media(max-width:600px){.ob-card{padding:24px 18px;}}
+.ob-step-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.ob-title{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,30px);font-weight:900;color:var(--text-primary);margin-bottom:6px;}
+.ob-subtitle{font-size:14px;color:var(--text-muted);margin-bottom:24px;line-height:1.6;}
+.conditions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:20px;}
+.cond-option{position:relative;}
+.cond-option input[type="checkbox"]{position:absolute;opacity:0;width:0;height:0;}
+.cond-btn{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--input-bg);cursor:pointer;transition:all 0.18s;font-size:13px;font-weight:600;color:var(--text-muted);}
+.cond-btn .cond-icon{font-size:20px;flex-shrink:0;}
+.cond-option input:checked + .cond-btn{border-color:var(--accent);background:var(--accent-pale);color:var(--accent-dark);box-shadow:0 0 0 2px var(--accent-glow);}
+.cond-btn:hover{border-color:var(--accent);color:var(--accent);}
+.selected-count{background:var(--accent-pale);border:1px solid var(--accent-border);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--accent-dark);margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+.cat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin:16px 0 8px;padding-left:2px;}
+.ob-nav{display:flex;justify-content:space-between;gap:12px;margin-top:32px;}
+.ob-btn-back{background:var(--card-bg);color:var(--text-muted);border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 24px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:6px;transition:all 0.18s;}
+.ob-btn-back:hover{border-color:var(--accent);color:var(--accent);}
+.ob-btn-next{background:linear-gradient(135deg,var(--sage),var(--mint));color:var(--navy);border:none;border-radius:var(--radius-sm);padding:13px 32px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform 0.18s,box-shadow 0.18s;}
+.ob-btn-next:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(97,179,144,0.35);}
+</style>
+
+<div class="onboard-wrap">
+  <div class="onboard-box">
+    <div class="ob-progress-wrap">
+      <div class="ob-progress-steps">
+        <div class="ob-step-dot done">✓</div>
+        <div class="ob-step-dot done">✓</div>
+        <div class="ob-step-dot active">3</div>
+        <div class="ob-step-dot">4</div>
+        <div class="ob-step-dot">5</div>
+      </div>
+      <div class="ob-progress-bar"><div class="ob-progress-fill" style="width:60%"></div></div>
+      <div class="ob-progress-label"><span>Step 3 of 5</span><span>Health Conditions</span></div>
+    </div>
+    <div class="ob-card">
+      <div class="ob-step-label">🏥 Step 3 — Your Health</div>
+      <h2 class="ob-title">Select Your Conditions</h2>
+      <p class="ob-subtitle">Select all that apply. We use this to filter every meal, recipe, and recommendation specifically for you. You can update this anytime.</p>
+
+      <div class="selected-count" id="selectedCount">
+        <span>✓</span>
+        <span id="countText">Select your conditions below</span>
+      </div>
+
+      <form method="POST" action="{{ url_for('profile.onboarding_step3') }}" id="condForm">
+
+        {% set categories = {} %}
+        {% for c in all_conditions %}
+          {% set cat = c.category or 'other' %}
+        {% endfor %}
+
+        {% set cat_labels = {
+          'cardiovascular': '❤️ Cardiovascular',
+          'metabolic':      '🩺 Metabolic',
+          'hormonal':       '🌸 Hormonal',
+          'lifestyle':      '🌿 Lifestyle Goals',
+          'digestive':      '🔥 Digestive',
+          'other':          '🏥 Other'
+        } %}
+
+        {% set current_cat = namespace(value='') %}
+        {% for c in all_conditions %}
+          {% if c.category != current_cat.value %}
+            {% set current_cat.value = c.category %}
+            <div class="cat-label">{{ cat_labels.get(c.category, c.category or 'Other') }}</div>
+          {% endif %}
+          <div class="conditions-grid" style="margin-bottom:0;">
+            <label class="cond-option">
+              <input type="checkbox" name="conditions" value="{{ c.id }}"
+                     {% if c.id in existing_ids %}checked{% endif %}
+                     onchange="updateCount()">
+              <div class="cond-btn">
+                <span class="cond-icon">{{ c.icon }}</span>
+                {{ c.name }}
+              </div>
+            </label>
+          </div>
+        {% endfor %}
+
+        <div class="ob-nav">
+          <a href="{{ url_for('profile.onboarding_step2') }}" class="ob-btn-back">← Back</a>
+          <button type="submit" class="ob-btn-next">Next — Goals →</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function updateCount() {
+  const checked = document.querySelectorAll('input[name="conditions"]:checked');
+  const text    = document.getElementById('countText');
+  if (checked.length === 0) {
+    text.textContent = 'Select your conditions below';
+  } else {
+    const names = Array.from(checked).map(c => c.closest('.cond-option').querySelector('.cond-btn').textContent.trim().replace(/\s+/g,' '));
+    text.textContent = `${checked.length} selected: ${names.slice(0,3).join(', ')}${checked.length > 3 ? '...' : ''}`;
+  }
+}
+updateCount();
+</script>
+{% endblock %}

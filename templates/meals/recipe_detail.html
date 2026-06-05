@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% block title %}{{ recipe.name }} | HealthTrack{% endblock %}
+{% block page_title %}Recipe Detail{% endblock %}
+
+{% block content %}
+<style>
+.recipe-hero{background:linear-gradient(135deg,#064e3b,#065f46,#047857);border-radius:var(--radius-lg);padding:32px;color:white;margin-bottom:24px;position:relative;overflow:hidden;}
+.recipe-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/svg%3E");}
+.recipe-hero-inner{display:grid;grid-template-columns:1fr 340px;gap:32px;position:relative;}
+@media(max-width:900px){.recipe-hero-inner{grid-template-columns:1fr;}}
+.recipe-emoji-box{width:100%;height:200px;background:rgba(255,255,255,0.10);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:80px;border:1px solid rgba(255,255,255,0.15);}
+.recipe-info .rc-eyebrow{font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;opacity:0.65;margin-bottom:8px;}
+.recipe-info .rc-name{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,36px);font-weight:900;margin-bottom:12px;line-height:1.2;}
+.recipe-info .rc-tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.rc-tag{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:100px;padding:4px 12px;font-size:12px;font-weight:600;}
+.recipe-info .rc-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;}
+.rc-meta-item{background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px;text-align:center;}
+.rc-meta-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;display:block;color:#9fd3c7;}
+.rc-meta-lbl{font-size:10px;opacity:0.65;text-transform:uppercase;letter-spacing:0.5px;}
+.fav-hero-btn{background:rgba(255,255,255,0.15);color:white;border:1.5px solid rgba(255,255,255,0.3);border-radius:var(--radius-sm);padding:10px 18px;font-size:13px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all 0.18s;cursor:pointer;margin-top:12px;}
+.fav-hero-btn:hover{background:rgba(255,255,255,0.25);color:white;}
+.fav-hero-btn.active{background:rgba(239,68,68,0.3);border-color:rgba(239,68,68,0.5);}
+
+.detail-grid{display:grid;grid-template-columns:1fr 360px;gap:22px;margin-bottom:24px;}
+@media(max-width:900px){.detail-grid{grid-template-columns:1fr;}}
+
+.card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;animation:fadeUp 0.4s ease both;}
+.card-hdr{padding:16px 22px;border-bottom:1px solid var(--border);}
+.card-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px;}
+.card-body{padding:18px 22px;}
+
+/* Macro bars */
+.macro-bar-row{margin-bottom:14px;}
+.macro-bar-label{display:flex;justify-content:space-between;font-size:12px;font-weight:600;margin-bottom:5px;}
+.macro-bar-bg{height:8px;background:var(--border);border-radius:100px;overflow:hidden;}
+.macro-bar-fill{height:100%;border-radius:100px;transition:width 1.2s cubic-bezier(0.34,1.56,0.64,1);}
+
+/* Ingredients list */
+.ingredient-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.ing-item{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--text-primary);}
+.ing-bullet{width:8px;height:8px;border-radius:50%;background:var(--sage);flex-shrink:0;}
+
+/* Steps timeline */
+.steps-list{list-style:none;display:flex;flex-direction:column;gap:0;}
+.step-item{display:flex;gap:16px;padding-bottom:20px;position:relative;}
+.step-item:last-child{padding-bottom:0;}
+.step-item:not(:last-child)::before{content:'';position:absolute;left:15px;top:34px;bottom:0;width:2px;background:var(--border);}
+.step-num{width:30px;height:30px;border-radius:50%;background:var(--navy);color:white;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;z-index:1;}
+.step-text{font-size:14px;color:var(--text-primary);line-height:1.65;padding-top:4px;}
+
+/* Health benefits */
+.benefits-box{background:var(--accent-pale);border-radius:var(--radius-sm);padding:16px;border:1px solid var(--accent-border);}
+.benefit-text{font-size:13px;color:var(--accent-dark);line-height:1.65;}
+
+/* Nutrition grid */
+.nutri-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.nutri-item{background:var(--bg);border-radius:var(--radius-sm);padding:12px;text-align:center;}
+.nutri-val{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;display:block;margin-bottom:3px;}
+.nutri-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);}
+
+/* Related recipes */
+.related-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
+.related-card{background:var(--bg);border-radius:var(--radius-sm);padding:12px;text-decoration:none;transition:all 0.15s;border:1px solid var(--border);}
+.related-card:hover{background:var(--accent-pale);border-color:var(--accent-border);}
+.related-name{font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:4px;}
+.related-cal{font-size:11px;color:var(--text-muted);}
+
+.back-link{display:inline-flex;align-items:center;gap:6px;color:var(--text-muted);font-size:14px;font-weight:500;text-decoration:none;margin-bottom:16px;transition:color 0.15s;}
+.back-link:hover{color:var(--accent);}
+</style>
+
+<a href="{{ url_for('meal.recipes') }}" class="back-link">← Back to Recipes</a>
+
+<!-- HERO -->
+{% set cat_emoji = {'Breakfast':'🍳','Lunch':'🍱','Dinner':'🍽️','Snack':'🍎','Morning':'☕','Soup':'🥣','Salad':'🥗','BP Special':'❤️','Special':'⭐'} %}
+<div class="recipe-hero animate-fadeIn">
+  <div class="recipe-hero-inner">
+    <div>
+      <div class="recipe-emoji-box">{{ cat_emoji.get(recipe.category, '🍲') }}</div>
+    </div>
+    <div class="recipe-info">
+      <div class="rc-eyebrow">{{ recipe.category or 'Recipe' }}</div>
+      <div class="rc-name">{{ recipe.name }}</div>
+      <div class="rc-tags">
+        <span class="rc-tag">{{ '🥦 Vegetarian' if recipe.is_veg else '🍗 Non-Vegetarian' }}</span>
+        {% if recipe.bp_friendly %}<span class="rc-tag">❤️ BP Friendly</span>{% endif %}
+        {% if recipe.sodium < 300 %}<span class="rc-tag">🧂 Low Sodium</span>{% endif %}
+        {% if recipe.high_protein %}<span class="rc-tag">💪 High Protein</span>{% endif %}
+        {% if recipe.high_fiber %}<span class="rc-tag">🌾 High Fiber</span>{% endif %}
+      </div>
+      {% if recipe.health_benefits %}
+      <div style="font-size:13px;opacity:0.82;line-height:1.6;margin-bottom:12px;">{{ recipe.health_benefits[:200] }}...</div>
+      {% endif %}
+      <div class="rc-meta">
+        <div class="rc-meta-item">
+          <span class="rc-meta-val">{{ recipe.calories }}</span>
+          <span class="rc-meta-lbl">Calories</span>
+        </div>
+        <div class="rc-meta-item">
+          <span class="rc-meta-val">{{ recipe.protein|round(0)|int }}g</span>
+          <span class="rc-meta-lbl">Protein</span>
+        </div>
+        <div class="rc-meta-item">
+          <span class="rc-meta-val">{{ recipe.sodium|int }}mg</span>
+          <span class="rc-meta-lbl">Sodium</span>
+        </div>
+      </div>
+      <a href="{{ url_for('meal.favorite_recipe', recipe_id=recipe.id) }}"
+         class="fav-hero-btn {% if is_fav %}active{% endif %}">
+        {{ '❤️ Saved' if is_fav else '🤍 Save Recipe' }}
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL GRID -->
+<div class="detail-grid">
+
+  <!-- LEFT -->
+  <div>
+    <!-- Ingredients -->
+    <div class="card" style="margin-bottom:22px;">
+      <div class="card-hdr"><div class="card-title">🥕 Ingredients</div></div>
+      <div class="card-body">
+        {% if recipe.ingredients %}
+        <ul class="ingredient-list">
+          {% for ing in recipe.ingredients.split(',') %}
+          <li class="ing-item">
+            <div class="ing-bullet"></div>
+            {{ ing.strip() }}
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <div style="color:var(--text-muted);font-size:13px;">No ingredients listed.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="card" style="margin-bottom:22px;">
+      <div class="card-hdr"><div class="card-title">👨‍🍳 How to Prepare</div></div>
+      <div class="card-body">
+        {% if recipe.steps %}
+        <ol class="steps-list">
+          {% for step in recipe.steps.split('.') %}
+          {% if step.strip() %}
+          <li class="step-item">
+            <div class="step-num">{{ loop.index }}</div>
+            <div class="step-text">{{ step.strip() }}.</div>
+          </li>
+          {% endif %}
+          {% endfor %}
+        </ol>
+        {% else %}
+        <!-- Default preparation steps based on category -->
+        <ol class="steps-list">
+          <li class="step-item"><div class="step-num">1</div><div class="step-text">Wash and prepare all ingredients listed. Keep everything ready before you start cooking.</div></li>
+          <li class="step-item"><div class="step-num">2</div><div class="step-text">Cook with minimal oil — use a non-stick pan or steamer to keep sodium and fat low.</div></li>
+          <li class="step-item"><div class="step-num">3</div><div class="step-text">Season with herbs and spices instead of salt — turmeric, cumin, coriander, and lemon work well.</div></li>
+          <li class="step-item"><div class="step-num">4</div><div class="step-text">Serve fresh and hot. Avoid reheating multiple times to preserve nutrients.</div></li>
+        </ol>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Health benefits -->
+    {% if recipe.health_benefits %}
+    <div class="card" style="margin-bottom:22px;">
+      <div class="card-hdr"><div class="card-title">💚 Health Benefits</div></div>
+      <div class="card-body">
+        <div class="benefits-box">
+          <div class="benefit-text">{{ recipe.health_benefits }}</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- RIGHT -->
+  <div>
+
+    <!-- Full nutrition -->
+    <div class="card" style="margin-bottom:22px;">
+      <div class="card-hdr"><div class="card-title">📊 Full Nutrition</div></div>
+      <div class="card-body">
+        <!-- Macro bars -->
+        {% set macros = [
+          ('🔥 Calories',  recipe.calories, 500,  'linear-gradient(90deg,#ef4444,#dc2626)'),
+          ('💪 Protein',   recipe.protein,  40,   'linear-gradient(90deg,var(--sage),var(--mint))'),
+          ('🍚 Carbs',     recipe.carbs,    60,   'linear-gradient(90deg,#3b82f6,#60a5fa)'),
+          ('🥑 Fats',      recipe.fats,     30,   'linear-gradient(90deg,#f59e0b,#fbbf24)'),
+          ('🌾 Fiber',     recipe.fiber,    15,   'linear-gradient(90deg,var(--violet),#7c3aed)'),
+        ] %}
+        {% for label, val, maxval, color in macros %}
+        <div class="macro-bar-row">
+          <div class="macro-bar-label">
+            <span style="font-size:12px;">{{ label }}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:12px;">{{ val|round(1) }}{% if 'Calories' in label %} kcal{% elif 'Sodium' in label %} mg{% else %}g{% endif %}</span>
+          </div>
+          <div class="macro-bar-bg">
+            <div class="macro-bar-fill" style="width:{{ [(val/maxval*100)|int, 100]|min }}%; background:{{ color }};"></div>
+          </div>
+        </div>
+        {% endfor %}
+
+        <!-- Detail grid -->
+        <div class="nutri-grid" style="margin-top:16px;">
+          <div class="nutri-item">
+            <span class="nutri-val" style="color:#ef4444;">{{ recipe.sodium|int }}mg</span>
+            <span class="nutri-lbl">🧂 Sodium</span>
+          </div>
+          <div class="nutri-item">
+            <span class="nutri-val" style="color:var(--sage);">{{ recipe.potassium|int }}mg</span>
+            <span class="nutri-lbl">⚡ Potassium</span>
+          </div>
+          {% if recipe.sugar %}
+          <div class="nutri-item">
+            <span class="nutri-val" style="color:#f59e0b;">{{ recipe.sugar|round(1) }}g</span>
+            <span class="nutri-lbl">🍬 Sugar</span>
+          </div>
+          {% endif %}
+          {% if recipe.cholesterol %}
+          <div class="nutri-item">
+            <span class="nutri-val" style="color:#6b7280;">{{ recipe.cholesterol|int }}mg</span>
+            <span class="nutri-lbl">💛 Cholesterol</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Health scores -->
+    <div class="card" style="margin-bottom:22px;">
+      <div class="card-hdr"><div class="card-title">🏆 Health Scores</div></div>
+      <div class="card-body">
+        {% for label, val, color in [
+          ('❤️ BP Score',       recipe.bp_score,           '#ef4444'),
+          ('🩺 Diabetes Score', recipe.diabetes_score,     '#f59e0b'),
+          ('⚖️ Weight Loss',   recipe.weight_loss_score,  'var(--violet)'),
+          ('🥗 Nutrition Score',recipe.nutrition_score,   'var(--sage)'),
+        ] %}
+        <div class="macro-bar-row">
+          <div class="macro-bar-label">
+            <span style="font-size:12px;">{{ label }}</span>
+            <span style="font-family:'DM Mono',monospace;font-size:12px;color:{{ color }};">{{ val|round(0)|int }}/100</span>
+          </div>
+          <div class="macro-bar-bg">
+            <div class="macro-bar-fill" style="width:{{ val|round(0)|int }}%; background:{{ color }};"></div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Related -->
+    {% if related %}
+    <div class="card">
+      <div class="card-hdr"><div class="card-title">🍲 Similar Recipes</div></div>
+      <div class="card-body">
+        <div class="related-grid">
+          {% for r in related %}
+          <a href="{{ url_for('meal.recipe_detail', recipe_id=r.id) }}" class="related-card">
+            <div class="related-name">{{ r.name }}</div>
+            <div class="related-cal">🔥 {{ r.calories }} kcal · 💪 {{ r.protein|round(0)|int }}g</div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

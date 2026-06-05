@@ -1,0 +1,988 @@
+{% extends "base.html" %}
+{% block title %}BP Tracker | HealthTrack{% endblock %}
+{% block page_title %}Blood Pressure Tracker{% endblock %}
+
+{% block content %}
+<style>
+/* ── ENHANCED MOTION TOKENS ─────────────────────────────── */
+:root {
+  --bp-ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --bp-shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.06);
+  --bp-shadow-card: 0 8px 24px rgba(15, 23, 42, 0.07), 0 2px 8px rgba(15, 23, 42, 0.04);
+  --bp-shadow-hover: 0 18px 40px rgba(15, 23, 42, 0.12), 0 8px 18px rgba(15, 23, 42, 0.06);
+  --bp-shadow-red: 0 10px 30px rgba(239, 68, 68, 0.18);
+  --bp-shadow-blue: 0 10px 30px rgba(59, 130, 246, 0.14);
+  --bp-shadow-navy: 0 14px 34px rgba(20, 45, 76, 0.18);
+}
+
+/* ── BP PAGE LAYOUT ───────────────────────────────────────── */
+.bp-top-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin-bottom: 24px;
+}
+@media (max-width: 1000px) { .bp-top-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 500px)  { .bp-top-grid { grid-template-columns: 1fr 1fr; } }
+
+.bp-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 22px;
+  margin-bottom: 24px;
+}
+@media (max-width: 960px) { .bp-main-grid { grid-template-columns: 1fr; } }
+
+/* ── HERO ─────────────────────────────────────────────────── */
+.bp-hero {
+  background: linear-gradient(135deg, #7f1d1d 0%, #b91c1c 45%, #ef4444 100%);
+  border-radius: var(--radius-lg);
+  padding: 28px 32px;
+  color: white;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 20px 50px rgba(127, 29, 29, 0.24), 0 8px 18px rgba(127, 29, 29, 0.14);
+  animation: fadeUp 0.6s var(--bp-ease) both, heroGlow 5s ease-in-out infinite;
+}
+.bp-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/svg%3E");
+}
+.bp-hero::after {
+  content: '❤️';
+  position: absolute;
+  right: 36px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 120px;
+  opacity: 0.09;
+  animation: heroHeartFloat 4.5s ease-in-out infinite;
+}
+.hero-left { position: relative; z-index: 1; }
+.hero-eyebrow {
+  display: inline-block;
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 100px;
+  padding: 4px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15);
+  animation: fadeUp 0.65s var(--bp-ease) both;
+}
+.hero-title {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(22px, 3vw, 34px);
+  font-weight: 900;
+  margin-bottom: 6px;
+  animation: fadeUp 0.75s var(--bp-ease) both;
+}
+.hero-subtitle {
+  font-size: 14px;
+  opacity: 0.78;
+  animation: fadeUp 0.85s var(--bp-ease) both;
+}
+.hero-target {
+  background: rgba(255,255,255,0.10);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  flex-wrap: wrap;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 8px 20px rgba(0,0,0,0.10);
+  z-index: 1;
+  animation: fadeUp 0.95s var(--bp-ease) both;
+}
+.hero-target-val { color: #fca5a5; font-family: 'DM Mono', monospace; }
+
+/* ── STAT CARDS ───────────────────────────────────────────── */
+.bp-stat-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  padding: 20px 18px;
+  border: 1px solid var(--border);
+  box-shadow: var(--bp-shadow-card);
+  transition:
+    transform 180ms var(--bp-ease),
+    box-shadow 180ms var(--bp-ease),
+    border-color 180ms var(--bp-ease);
+  animation: fadeUp 0.45s var(--bp-ease) both;
+  position: relative;
+  overflow: hidden;
+}
+.bp-stat-card::after {
+  content: '';
+  position: absolute;
+  inset: auto -20% -50% auto;
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, rgba(239,68,68,0.10), transparent 70%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 180ms var(--bp-ease);
+}
+.bp-stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--bp-shadow-hover);
+  border-color: rgba(239,68,68,0.18);
+}
+.bp-stat-card:hover::after { opacity: 1; }
+.bp-stat-card:nth-child(1) { animation-delay: 0.05s; }
+.bp-stat-card:nth-child(2) { animation-delay: 0.10s; }
+.bp-stat-card:nth-child(3) { animation-delay: 0.15s; }
+.bp-stat-card:nth-child(4) { animation-delay: 0.20s; }
+
+.sc-lbl {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--text-muted); margin-bottom: 10px;
+}
+.sc-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 30px; font-weight: 500; line-height: 1; margin-bottom: 6px;
+  transition: transform 180ms var(--bp-ease);
+}
+.bp-stat-card:hover .sc-val { transform: translateY(-1px); }
+.sc-val.red    { color: #ef4444; text-shadow: 0 6px 18px rgba(239,68,68,0.12); }
+.sc-val.blue   { color: #3b82f6; text-shadow: 0 6px 18px rgba(59,130,246,0.12); }
+.sc-val.green  { color: var(--sage); text-shadow: 0 6px 18px rgba(97,179,144,0.12); }
+.sc-val.gold   { color: #f59e0b; text-shadow: 0 6px 18px rgba(245,158,11,0.12); }
+.sc-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 10px; }
+
+/* Pulse dot */
+.pulse-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  margin-right: 5px;
+  box-shadow: 0 0 0 0 rgba(239,68,68,0.45);
+  animation: pulseDot 1.8s infinite;
+}
+@keyframes pulseDot {
+  0%,100% { transform: scale(1); opacity: 1; box-shadow: 0 0 0 0 rgba(239,68,68,0.38); }
+  50%     { transform: scale(1.4); opacity: 0.6; box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+}
+
+/* Status badge */
+.bp-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  border-radius: 100px; padding: 4px 12px;
+  font-size: 11px; font-weight: 700;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+  transition: transform 180ms var(--bp-ease), box-shadow 180ms var(--bp-ease);
+}
+.bp-badge:hover { transform: translateY(-1px); }
+.bp-badge.normal   { background: #dcfce7; color: #166534; box-shadow: 0 6px 16px rgba(34,197,94,0.10); }
+.bp-badge.elevated { background: #fef3c7; color: #92400e; box-shadow: 0 6px 16px rgba(245,158,11,0.12); }
+.bp-badge.high     { background: #fee2e2; color: #991b1b; box-shadow: 0 6px 16px rgba(239,68,68,0.12); }
+.bp-badge.critical { background: #1f2937; color: white; box-shadow: 0 8px 18px rgba(31,41,55,0.22); }
+
+/* ── ADD FORM ─────────────────────────────────────────────── */
+.add-form-card {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--bp-shadow-card);
+  overflow: hidden;
+  animation: fadeUp 0.5s 0.1s var(--bp-ease) both;
+  transition: box-shadow 180ms var(--bp-ease), transform 180ms var(--bp-ease);
+}
+.add-form-card:hover {
+  box-shadow: 0 16px 38px rgba(20, 45, 76, 0.10), 0 6px 14px rgba(20,45,76,0.06);
+  transform: translateY(-2px);
+}
+.form-card-header {
+  background: linear-gradient(135deg, var(--navy), #1e3f6e);
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: inset 0 -1px 0 rgba(255,255,255,0.04);
+}
+.form-card-title {
+  font-family: 'Fraunces', serif;
+  font-size: 17px;
+  font-weight: 700;
+  color: white;
+}
+.form-card-sub { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 2px; }
+.form-card-body { padding: 22px 24px; }
+
+.bp-inputs-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+@media (max-width: 600px) { .bp-inputs-row { grid-template-columns: 1fr 1fr; } }
+
+.bp-input-group { display: flex; flex-direction: column; gap: 6px; }
+.bp-input-label {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--text-muted);
+}
+.bp-input-wrap { position: relative; }
+.bp-input-unit {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  font-size: 11px; font-weight: 700; color: var(--text-muted); pointer-events: none;
+}
+.bp-input {
+  width: 100%; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px 42px 12px 14px;
+  font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500;
+  color: var(--text-primary); background: var(--input-bg); outline: none;
+  transition:
+    border-color 0.2s var(--bp-ease),
+    box-shadow 0.2s var(--bp-ease),
+    background 0.2s var(--bp-ease),
+    transform 0.2s var(--bp-ease);
+  box-shadow: inset 0 1px 2px rgba(15,23,42,0.03);
+}
+.bp-input:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.12), 0 10px 24px rgba(239,68,68,0.08);
+  background: var(--card-bg);
+  transform: translateY(-1px);
+}
+.bp-input-hint { font-size: 10px; color: var(--text-muted); }
+
+/* Live status preview */
+.bp-live-preview {
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 12px 16px; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+  border: 1px solid var(--border);
+  font-size: 14px; font-weight: 600;
+  transition:
+    all 0.3s var(--bp-ease),
+    box-shadow 0.3s var(--bp-ease);
+  min-height: 46px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.35);
+}
+.bp-live-preview.active {
+  box-shadow: 0 10px 24px rgba(15,23,42,0.08);
+}
+.bp-live-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0; transition: background 0.3s var(--bp-ease), transform 0.3s var(--bp-ease), box-shadow 0.3s var(--bp-ease);
+}
+.bp-live-reading { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; }
+
+.bp-save-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: white; border: none; border-radius: var(--radius-sm);
+  padding: 13px;
+  font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition:
+    transform 180ms var(--bp-ease),
+    box-shadow 180ms var(--bp-ease),
+    filter 180ms var(--bp-ease);
+  box-shadow: 0 10px 24px rgba(239,68,68,0.24), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.bp-save-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(239,68,68,0.34), 0 6px 14px rgba(239,68,68,0.14);
+  filter: saturate(1.04);
+}
+.bp-save-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 18px rgba(239,68,68,0.20);
+}
+.bp-tips {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;
+}
+.bp-tip {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 100px; padding: 4px 12px;
+  font-size: 11px; color: var(--text-muted); font-weight: 500;
+  box-shadow: 0 4px 12px rgba(15,23,42,0.04);
+  animation: softFloat 5s ease-in-out infinite;
+}
+.bp-tip:nth-child(2) { animation-delay: 0.4s; }
+.bp-tip:nth-child(3) { animation-delay: 0.8s; }
+.bp-tip:nth-child(4) { animation-delay: 1.2s; }
+
+/* ── CHART CARD ───────────────────────────────────────────── */
+.chart-outer {
+  background: var(--card-bg); border-radius: var(--radius);
+  border: 1px solid var(--border); box-shadow: var(--bp-shadow-card);
+  overflow: hidden; animation: fadeUp 0.45s 0.1s var(--bp-ease) both;
+  transition: transform 180ms var(--bp-ease), box-shadow 180ms var(--bp-ease);
+}
+.chart-outer:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(15,23,42,0.10), 0 8px 16px rgba(15,23,42,0.05);
+}
+.chart-hdr {
+  padding: 16px 22px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.14), transparent);
+}
+.chart-hdr-title {
+  font-family: 'Fraunces', serif; font-size: 17px;
+  font-weight: 700; color: var(--text-primary);
+}
+.chart-hdr-legend { display: flex; gap: 14px; flex-wrap: wrap; }
+.chart-leg-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+}
+.chart-leg-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  box-shadow: 0 0 0 4px rgba(0,0,0,0.03);
+}
+.chart-hdr-actions { display: flex; gap: 6px; }
+.chart-range-btn {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 5px 12px;
+  font-size: 12px; font-weight: 600; color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    all 0.15s var(--bp-ease),
+    transform 0.15s var(--bp-ease),
+    box-shadow 0.15s var(--bp-ease);
+  box-shadow: 0 2px 8px rgba(15,23,42,0.03);
+}
+.chart-range-btn.active, .chart-range-btn:hover {
+  background: var(--navy); color: white; border-color: var(--navy);
+  box-shadow: var(--bp-shadow-navy);
+  transform: translateY(-1px);
+}
+.chart-body { padding: 18px 20px 20px; }
+
+/* ── TARGET LINES INFO ────────────────────────────────────── */
+.target-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.target-chip {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 100px; padding: 4px 12px;
+  font-size: 11px; font-weight: 600; color: var(--text-muted);
+  display: flex; align-items: center; gap: 5px;
+  box-shadow: 0 4px 10px rgba(15,23,42,0.04);
+  transition: transform 180ms var(--bp-ease), box-shadow 180ms var(--bp-ease);
+}
+.target-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 18px rgba(15,23,42,0.07);
+}
+.target-chip .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── STREAK CARD ──────────────────────────────────────────── */
+.streak-card {
+  background: linear-gradient(135deg, var(--navy), #1e3f6e, var(--violet));
+  border-radius: var(--radius); padding: 24px 26px;
+  text-align: center; margin-bottom: 22px; position: relative; overflow: hidden;
+  animation: fadeUp 0.45s 0.2s var(--bp-ease) both;
+  box-shadow: 0 20px 46px rgba(20,45,76,0.18), 0 8px 18px rgba(20,45,76,0.08);
+}
+.streak-card::before {
+  content: '';
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 35%),
+              radial-gradient(circle at 80% 70%, rgba(252,165,165,0.14), transparent 28%);
+  animation: gradientShift 8s ease-in-out infinite;
+}
+.streak-card::after {
+  content: '🔥'; position: absolute; right: 20px; top: 50%;
+  transform: translateY(-50%); font-size: 70px; opacity: 0.10;
+  animation: flameBounce 2.8s ease-in-out infinite;
+}
+.streak-lbl {
+  font-size: 11px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 1.5px; color: rgba(255,255,255,0.6); margin-bottom: 8px;
+  position: relative;
+}
+.streak-num {
+  font-family: 'DM Mono', monospace; font-size: 60px; font-weight: 500;
+  color: #fca5a5; line-height: 1; margin-bottom: 6px;
+  animation: countUp 0.6s ease both, pulseNumber 3s ease-in-out infinite;
+  position: relative;
+  text-shadow: 0 10px 24px rgba(252,165,165,0.24);
+}
+@keyframes countUp { from { opacity:0; transform:scale(0.8); } to { opacity:1; transform:scale(1); } }
+.streak-sub { font-size: 13px; color: rgba(255,255,255,0.6); position: relative; }
+.streak-badges {
+  display: flex; gap: 8px; justify-content: center; margin-top: 14px; flex-wrap: wrap;
+  position: relative;
+}
+.streak-badge {
+  background: rgba(255,255,255,0.10); border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 100px; padding: 4px 12px;
+  font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.75);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.10), 0 6px 16px rgba(0,0,0,0.10);
+  animation: fadeUp 0.45s var(--bp-ease) both;
+}
+.streak-badge:nth-child(1) { animation-delay: 0.25s; }
+.streak-badge:nth-child(2) { animation-delay: 0.35s; }
+.streak-badge:nth-child(3) { animation-delay: 0.45s; }
+
+/* ── HISTORY TABLE ────────────────────────────────────────── */
+.history-outer {
+  background: var(--card-bg); border-radius: var(--radius);
+  border: 1px solid var(--border); box-shadow: var(--bp-shadow-card);
+  overflow: hidden; margin-top: 22px; animation: fadeUp 0.45s 0.25s var(--bp-ease) both;
+}
+.history-hdr {
+  padding: 16px 22px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+}
+.history-title {
+  font-family: 'Fraunces', serif; font-size: 17px;
+  font-weight: 700; color: var(--text-primary);
+}
+.history-search {
+  position: relative; display: flex; align-items: center;
+}
+.history-search-icon {
+  position: absolute; left: 10px; color: var(--text-muted); font-size: 13px; pointer-events: none;
+}
+.history-search-input {
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  padding: 7px 12px 7px 30px;
+  font-family: 'DM Sans', sans-serif; font-size: 12px; color: var(--text-primary);
+  background: var(--bg); outline: none; width: 200px;
+  transition: border-color 0.2s var(--bp-ease), box-shadow 0.2s var(--bp-ease), transform 0.2s var(--bp-ease);
+  box-shadow: inset 0 1px 2px rgba(15,23,42,0.03);
+}
+.history-search-input:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239,68,68,0.10), 0 10px 20px rgba(239,68,68,0.06);
+  transform: translateY(-1px);
+}
+.bp-table { width: 100%; border-collapse: collapse; }
+.bp-table thead th {
+  background: var(--bg); padding: 11px 16px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.8px; color: var(--text-muted);
+  border-bottom: 1px solid var(--border); white-space: nowrap;
+}
+.bp-table thead th:first-child { padding-left: 22px; }
+.bp-table tbody td {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  font-size: 14px; color: var(--text-primary); vertical-align: middle;
+}
+.bp-table tbody td:first-child { padding-left: 22px; }
+.bp-table tbody tr {
+  transition: background 180ms var(--bp-ease), transform 180ms var(--bp-ease), box-shadow 180ms var(--bp-ease);
+  animation: rowFade 0.35s var(--bp-ease) both;
+}
+.bp-table tbody tr:nth-child(1) { animation-delay: 0.03s; }
+.bp-table tbody tr:nth-child(2) { animation-delay: 0.06s; }
+.bp-table tbody tr:nth-child(3) { animation-delay: 0.09s; }
+.bp-table tbody tr:nth-child(4) { animation-delay: 0.12s; }
+.bp-table tbody tr:nth-child(5) { animation-delay: 0.15s; }
+.bp-table tbody tr:hover {
+  background: var(--bg);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+}
+.bp-table tbody tr:last-child td { border-bottom: none; }
+.bp-reading-combined {
+  font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 600; color: var(--text-primary);
+  transition: transform 180ms var(--bp-ease), text-shadow 180ms var(--bp-ease);
+}
+.bp-table tbody tr:hover .bp-reading-combined {
+  transform: translateX(1px);
+  text-shadow: 0 6px 14px rgba(15,23,42,0.06);
+}
+.bp-reading-combined.high { color: #ef4444; }
+.del-btn {
+  width: 32px; height: 32px; border-radius: 9px;
+  background: #fee2e2; color: #dc2626; border: none;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 13px; cursor: pointer; text-decoration: none;
+  transition:
+    all 0.15s var(--bp-ease),
+    transform 0.15s var(--bp-ease),
+    box-shadow 0.15s var(--bp-ease);
+  box-shadow: 0 6px 14px rgba(220,38,38,0.10);
+}
+.del-btn:hover {
+  background: #ef4444; color: white; transform: scale(1.06) rotate(-4deg);
+  box-shadow: 0 12px 20px rgba(239,68,68,0.22);
+}
+
+/* ── EXTRA GLOBAL ENTRANCE / FLOAT ───────────────────────── */
+.animate-fadeIn { animation: fadeIn 0.55s var(--bp-ease) both; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes rowFade {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes heroHeartFloat {
+  0%,100% { transform: translateY(-50%) scale(1); opacity: 0.08; }
+  50%     { transform: translateY(calc(-50% - 6px)) scale(1.03); opacity: 0.12; }
+}
+@keyframes heroGlow {
+  0%,100% { box-shadow: 0 20px 50px rgba(127, 29, 29, 0.24), 0 8px 18px rgba(127, 29, 29, 0.14); }
+  50%     { box-shadow: 0 26px 58px rgba(127, 29, 29, 0.28), 0 10px 22px rgba(127, 29, 29, 0.16); }
+}
+@keyframes softFloat {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-2px); }
+}
+@keyframes flameBounce {
+  0%,100% { transform: translateY(-50%) scale(1); }
+  50%     { transform: translateY(calc(-50% - 4px)) scale(1.05); }
+}
+@keyframes pulseNumber {
+  0%,100% { transform: scale(1); }
+  50%     { transform: scale(1.02); }
+}
+@keyframes gradientShift {
+  0%,100% { transform: translate3d(0,0,0) scale(1); }
+  50%     { transform: translate3d(0,-4px,0) scale(1.02); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+</style>
+
+<!-- ════════════ HERO ════════════ -->
+<div class="bp-hero animate-fadeIn">
+  <div class="hero-left">
+    <div class="hero-eyebrow">❤️ BP Recovery Plan</div>
+    <h1 class="hero-title">Blood Pressure Tracker</h1>
+    <p class="hero-subtitle">Monitor daily BP trends, track your streak, and stay on target.</p>
+  </div>
+  <div class="hero-target">
+    <span>🎯 Target:</span>
+    <span class="hero-target-val">
+      {{ goals.target_bp_systolic if goals and goals.target_bp_systolic else 130 }}/{{ goals.target_bp_diastolic if goals and goals.target_bp_diastolic else 80 }} mmHg
+    </span>
+    <span style="opacity:0.4;">|</span>
+    <span>Status: <strong>{{ latest_status }}</strong></span>
+    <a href="{{ url_for('bp.export_bp') }}" class="btn btn-sm" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.25);border-radius:8px;padding:5px 12px;font-size:12px;text-decoration:none;box-shadow:0 8px 18px rgba(0,0,0,0.10);transition:transform 180ms var(--bp-ease),box-shadow 180ms var(--bp-ease);" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">📥 Export CSV</a>
+  </div>
+</div>
+
+<!-- ════════════ STAT CARDS ════════════ -->
+<div class="bp-top-grid">
+
+  <!-- Latest -->
+  <div class="bp-stat-card">
+    <div class="sc-lbl"><span class="pulse-dot"></span> Latest Reading</div>
+    {% if latest %}
+      <div class="sc-val red">{{ latest.value_1|int }}/{{ latest.value_2|int }}</div>
+      <div class="sc-sub">
+        Pulse: <strong>{{ latest.value_3|int if latest.value_3 else '—' }}</strong> bpm ·
+        {{ latest.recorded_at.strftime('%d %b %I:%M %p') }}
+      </div>
+      <span class="bp-badge {{ 'normal' if latest_status == 'Normal' else ('elevated' if latest_status == 'Elevated' else ('critical' if latest_status == 'Crisis' else 'high')) }}">
+        {% if latest_status == 'Normal' %}✅{% elif latest_status == 'Elevated' %}⚠️{% else %}🔴{% endif %}
+        {{ latest_status }}
+      </span>
+    {% else %}
+      <div style="padding:16px 0; color:var(--text-muted); font-size:14px;">No readings yet</div>
+    {% endif %}
+  </div>
+
+  <!-- Morning -->
+  <div class="bp-stat-card">
+    <div class="sc-lbl">🌅 Morning BP</div>
+    <div class="sc-val blue">{{ morning_bp or '—' }}</div>
+    <div class="sc-sub">First reading of the day</div>
+    <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">Target: below 130/80</div>
+  </div>
+
+  <!-- Evening -->
+  <div class="bp-stat-card">
+    <div class="sc-lbl">🌙 Evening BP</div>
+    <div class="sc-val green">{{ evening_bp or '—' }}</div>
+    <div class="sc-sub">After 3pm reading</div>
+    <div style="font-size:12px; color:var(--text-muted); margin-top:6px;">Check daily 6–7pm</div>
+  </div>
+
+  <!-- 30-day avg -->
+  <div class="bp-stat-card">
+    <div class="sc-lbl">📊 30-Day Average</div>
+    <div class="sc-val gold">
+      {% if avg_sys_30 %}{{ avg_sys_30|int }}/{{ avg_dia_30|int }}{% else %}—{% endif %}
+    </div>
+    <div class="sc-sub">
+      ✅ Normal days: <strong>{{ days_normal }}</strong> ·
+      🔴 High days: <strong>{{ days_high }}</strong>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════ MAIN: CHART + FORM ════════════ -->
+<div class="bp-main-grid">
+
+  <!-- Chart -->
+  <div class="chart-outer">
+    <div class="chart-hdr">
+      <div class="chart-hdr-title">📈 BP Trend Chart</div>
+      <div class="chart-hdr-legend">
+        <div class="chart-leg-item"><div class="chart-leg-dot" style="background:#ef4444;"></div>Systolic</div>
+        <div class="chart-leg-item"><div class="chart-leg-dot" style="background:#3b82f6;"></div>Diastolic</div>
+        <div class="chart-leg-item"><div class="chart-leg-dot" style="background:var(--sage);"></div>Pulse</div>
+      </div>
+      <div class="chart-hdr-actions">
+        <button class="chart-range-btn active" onclick="loadChart(7, this)">7D</button>
+        <button class="chart-range-btn" onclick="loadChart(14, this)">14D</button>
+        <button class="chart-range-btn" onclick="loadChart(30, this)">30D</button>
+      </div>
+    </div>
+    <div class="chart-body">
+      <div class="target-chips">
+        <div class="target-chip"><div class="dot" style="background:#ef4444;"></div>Target Sys: {{ goals.target_bp_systolic if goals else 130 }}</div>
+        <div class="target-chip"><div class="dot" style="background:#3b82f6;"></div>Target Dia: {{ goals.target_bp_diastolic if goals else 80 }}</div>
+        <div class="target-chip"><div class="dot" style="background:var(--sage);"></div>Pulse Target: 60–80</div>
+      </div>
+      <canvas id="bpChart" style="max-height:280px;"></canvas>
+    </div>
+  </div>
+
+  <!-- Add Form -->
+  <div class="add-form-card">
+    <div class="form-card-header">
+      <div>
+        <div class="form-card-title">➕ Add BP Reading</div>
+        <div class="form-card-sub">Sit quietly 5 mins before measuring</div>
+      </div>
+    </div>
+    <div class="form-card-body">
+
+      <form method="POST" action="{{ url_for('bp.add_bp') }}" id="bpForm">
+
+        <div class="bp-inputs-row">
+          <div class="bp-input-group">
+            <label class="bp-input-label">Systolic</label>
+            <div class="bp-input-wrap">
+              <input type="number" name="systolic" id="sysInput"
+                     class="bp-input" placeholder="120"
+                     min="60" max="250" required
+                     oninput="updateLivePreview()">
+              <span class="bp-input-unit">mmHg</span>
+            </div>
+            <div class="bp-input-hint">Upper number</div>
+          </div>
+          <div class="bp-input-group">
+            <label class="bp-input-label">Diastolic</label>
+            <div class="bp-input-wrap">
+              <input type="number" name="diastolic" id="diaInput"
+                     class="bp-input" placeholder="80"
+                     min="40" max="150" required
+                     oninput="updateLivePreview()">
+              <span class="bp-input-unit">mmHg</span>
+            </div>
+            <div class="bp-input-hint">Lower number</div>
+          </div>
+          <div class="bp-input-group">
+            <label class="bp-input-label">Pulse</label>
+            <div class="bp-input-wrap">
+              <input type="number" name="pulse" id="pulseInput"
+                     class="bp-input" placeholder="72"
+                     min="30" max="220"
+                     oninput="updateLivePreview()">
+              <span class="bp-input-unit">bpm</span>
+            </div>
+            <div class="bp-input-hint">Heart rate</div>
+          </div>
+        </div>
+
+        <!-- Live preview -->
+        <div class="bp-live-preview" id="livePreview">
+          <div class="bp-live-dot" id="liveDot" style="background:var(--border);"></div>
+          <div>
+            <div class="bp-live-reading" id="liveReading" style="color:var(--text-muted);">Enter readings above</div>
+            <div style="font-size:11px; color:var(--text-muted); margin-top:2px;" id="liveStatus"></div>
+          </div>
+        </div>
+
+        <!-- Notes (optional) -->
+        <div style="margin-bottom:14px;">
+          <label class="bp-input-label">Notes (optional)</label>
+          <input type="text" name="notes" class="form-control" style="font-size:13px; box-shadow:inset 0 1px 2px rgba(15,23,42,0.03), 0 4px 10px rgba(15,23,42,0.03); transition:box-shadow 180ms var(--bp-ease), transform 180ms var(--bp-ease);" placeholder="e.g. After exercise, feeling stressed..." onfocus="this.style.transform='translateY(-1px)';this.style.boxShadow='0 0 0 3px rgba(239,68,68,0.10), 0 10px 20px rgba(239,68,68,0.06)'" onblur="this.style.transform='translateY(0)';this.style.boxShadow='inset 0 1px 2px rgba(15,23,42,0.03), 0 4px 10px rgba(15,23,42,0.03)'">
+        </div>
+
+        <button type="submit" class="bp-save-btn">
+          <i class="bi bi-heart-pulse"></i> Save Reading
+        </button>
+
+      </form>
+
+      <div class="bp-tips">
+        <span class="bp-tip">Same arm every time</span>
+        <span class="bp-tip">Back supported</span>
+        <span class="bp-tip">Feet flat on floor</span>
+        <span class="bp-tip">No coffee 30min before</span>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════ STREAK ════════════ -->
+<div class="streak-card">
+  <div class="streak-lbl">🔥 BP Tracking Streak</div>
+  <div class="streak-num">{{ streak }}</div>
+  <div class="streak-sub">consecutive days tracked</div>
+  <div class="streak-badges">
+    <span class="streak-badge">📅 Track every day</span>
+    <span class="streak-badge">🎯 Target: 30 days</span>
+    <span class="streak-badge">🏆 Consistency = Recovery</span>
+  </div>
+</div>
+
+<!-- ════════════ HISTORY TABLE ════════════ -->
+<div class="history-outer">
+  <div class="history-hdr">
+    <div class="history-title">📋 BP History</div>
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <div class="history-search">
+        <span class="history-search-icon">🔍</span>
+        <input type="text" class="history-search-input" placeholder="Search date..."
+               oninput="filterHistory(this.value)">
+      </div>
+      <span class="bp-badge" style="background:var(--navy);color:white;box-shadow:0 10px 18px rgba(20,45,76,0.16);">{{ readings|length }} Records</span>
+    </div>
+  </div>
+
+  {% if readings %}
+  <div style="overflow-x:auto;">
+    <table class="bp-table" id="bpHistoryTable">
+      <thead>
+        <tr>
+          <th>Date & Time</th>
+          <th>Reading</th>
+          <th>Systolic</th>
+          <th>Diastolic</th>
+          <th>Pulse</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in readings %}
+        {% set status_text = 'Normal' if r.value_1 < 120 and r.value_2 < 80
+                        else ('Elevated' if r.value_1 < 130 and r.value_2 < 80
+                        else ('High' if r.value_1 < 180 or r.value_2 < 120
+                        else 'Crisis')) %}
+        {% set status_cls  = 'normal' if status_text == 'Normal'
+                        else ('elevated' if status_text == 'Elevated'
+                        else ('critical' if status_text == 'Crisis' else 'high')) %}
+        <tr>
+          <td>
+            <div style="font-weight:600; font-size:14px;">{{ r.recorded_at.strftime('%d %b %Y') }}</div>
+            <div style="font-size:11px; color:var(--text-muted);">{{ r.recorded_at.strftime('%I:%M %p') }}</div>
+          </td>
+          <td>
+            <span class="bp-reading-combined {% if r.value_1 >= 160 %}high{% endif %}">
+              {{ r.value_1|int }}/{{ r.value_2|int }}
+            </span>
+          </td>
+          <td style="font-family:'DM Mono',monospace; font-size:14px; {% if r.value_1 >= 140 %}color:#ef4444;{% endif %}">{{ r.value_1|int }}</td>
+          <td style="font-family:'DM Mono',monospace; font-size:14px; {% if r.value_2 >= 90 %}color:#ef4444;{% endif %}">{{ r.value_2|int }}</td>
+          <td style="font-family:'DM Mono',monospace; font-size:14px;">{{ r.value_3|int if r.value_3 else '—' }}</td>
+          <td><span class="bp-badge {{ status_cls }}">{{ status_text }}</span></td>
+          <td>
+            <a href="{{ url_for('bp.delete_bp', bp_id=r.id) }}"
+               class="del-btn"
+               onclick="return confirm('Delete this reading?')">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div style="padding:50px 20px; text-align:center; color:var(--text-muted); animation:fadeUp 0.45s var(--bp-ease) both;">
+      <div style="font-size:48px; margin-bottom:12px; animation:softFloat 3s ease-in-out infinite;">💔</div>
+      <div style="font-size:15px; font-weight:600; margin-bottom:8px;">No BP history yet</div>
+      <div style="font-size:13px;">Add your first reading using the form above.</div>
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Chart setup ───────────────────────────────────────────
+const initialData = {{ weekly_bp | tojson }};
+let bpChart = null;
+
+function buildChart(data) {
+  const ctx = document.getElementById('bpChart');
+  if (!ctx) return;
+  if (bpChart) bpChart.destroy();
+
+  bpChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.day),
+      datasets: [
+        {
+          label: 'Systolic',
+          data: data.map(d => d.sys),
+          borderColor: '#ef4444',
+          backgroundColor: 'rgba(239,68,68,0.07)',
+          borderWidth: 2.5, tension: 0.4,
+          pointBackgroundColor: '#ef4444', pointRadius: 4,
+          pointHoverRadius: 5,
+          pointHoverBorderWidth: 3,
+          pointHoverBorderColor: '#fff',
+          fill: true, spanGaps: true,
+        },
+        {
+          label: 'Diastolic',
+          data: data.map(d => d.dia),
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59,130,246,0.05)',
+          borderWidth: 2.5, tension: 0.4,
+          pointBackgroundColor: '#3b82f6', pointRadius: 4,
+          pointHoverRadius: 5,
+          pointHoverBorderWidth: 3,
+          pointHoverBorderColor: '#fff',
+          fill: true, spanGaps: true,
+        },
+        {
+          label: 'Pulse',
+          data: data.map(d => d.pulse),
+          borderColor: '#61b390',
+          backgroundColor: 'transparent',
+          borderWidth: 2, borderDash: [5,4], tension: 0.4,
+          pointRadius: 3,
+          pointHoverRadius: 4,
+          fill: false, spanGaps: true,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      animation: {
+        duration: 850,
+        easing: 'easeOutQuart'
+      },
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#142d4c', titleColor: '#e8edf5',
+          bodyColor: '#adc4e0', padding: 12, cornerRadius: 10,
+          displayColors: false,
+          callbacks: {
+            label: ctx => {
+              const u = ctx.dataset.label === 'Pulse' ? ' bpm' : ' mmHg';
+              return ` ${ctx.dataset.label}: ${ctx.parsed.y}${u}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: { color: '#6b7280', font: { size: 11 } }
+        },
+        y: {
+          beginAtZero: false, min: 50,
+          grid: { color: 'rgba(0,0,0,0.04)' },
+          ticks: { color: '#6b7280', font: { size: 11 }, callback: v => v + '' }
+        }
+      }
+    }
+  });
+}
+
+buildChart(initialData);
+
+async function loadChart(days, btn) {
+  document.querySelectorAll('.chart-range-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  try {
+    const resp = await fetch(`{{ url_for('bp.chart_data') }}?days=${days}`);
+    const data = await resp.json();
+    buildChart(data);
+  } catch(e) { console.error('Chart load failed', e); }
+}
+
+// ── Live BP preview ───────────────────────────────────────
+function updateLivePreview() {
+  const s       = parseFloat(document.getElementById('sysInput').value);
+  const d       = parseFloat(document.getElementById('diaInput').value);
+  const p       = parseFloat(document.getElementById('pulseInput').value);
+  const reading = document.getElementById('liveReading');
+  const status  = document.getElementById('liveStatus');
+  const dot     = document.getElementById('liveDot');
+  const box     = document.getElementById('livePreview');
+
+  if (!s || !d) {
+    reading.textContent = 'Enter readings above';
+    reading.style.color = 'var(--text-muted)';
+    dot.style.background = 'var(--border)';
+    dot.style.transform = 'scale(1)';
+    dot.style.boxShadow = 'none';
+    status.textContent = '';
+    box.classList.remove('active');
+    return;
+  }
+
+  box.classList.add('active');
+  reading.textContent = `${s}/${d} mmHg${p ? ' · ' + p + ' bpm' : ''}`;
+
+  let statusTxt, color;
+  if (s < 120 && d < 80)      { statusTxt='Normal ✅';            color='#22c55e'; }
+  else if (s < 130 && d < 80) { statusTxt='Elevated ⚠️';         color='#f59e0b'; }
+  else if (s < 140 || d < 90) { statusTxt='High Stage 1 🔴';     color='#ef4444'; }
+  else if (s < 180 || d < 120){ statusTxt='High Stage 2 🔴';     color='#dc2626'; }
+  else                        { statusTxt='⚠️ Crisis — See Doctor Now!'; color='#7f1d1d'; }
+
+  reading.style.color   = color;
+  dot.style.background  = color;
+  dot.style.transform   = 'scale(1.15)';
+  dot.style.boxShadow   = `0 0 0 6px ${hexToRgba(color, 0.12)}`;
+  status.textContent    = statusTxt;
+  status.style.color    = color;
+}
+
+function hexToRgba(hex, alpha) {
+  const h = hex.replace('#', '');
+  const bigint = parseInt(h, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+// ── History search ────────────────────────────────────────
+function filterHistory(q) {
+  q = q.toLowerCase().trim();
+  document.querySelectorAll('#bpHistoryTable tbody tr').forEach(row => {
+    row.style.display = (!q || row.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
+}
+</script>
+{% endblock %}

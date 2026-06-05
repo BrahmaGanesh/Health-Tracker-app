@@ -1,0 +1,536 @@
+{% extends "base.html" %}
+{% block title %}Sign In | HealthTrack{% endblock %}
+
+{% block guest_content %}
+<style>
+/* ── AUTH WRAPPER ─────────────────────────────────────────── */
+.auth-wrapper {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--bg);
+}
+@media (max-width: 900px) {
+  .auth-wrapper  { grid-template-columns: 1fr; }
+  .auth-visual   { display: none; }
+}
+
+/* ── LEFT: VISUAL ─────────────────────────────────────────── */
+.auth-visual {
+  background: linear-gradient(145deg, #142d4c 0%, #1e3f6e 40%, #4f3b78 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.auth-visual::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 20% 80%, rgba(159,211,199,0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(79,59,120,0.3) 0%, transparent 50%);
+}
+.auth-visual::after {
+  content: '❤️';
+  position: absolute;
+  bottom: 40px; right: 40px;
+  font-size: 160px;
+  opacity: 0.06;
+}
+.visual-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 52px;
+  position: relative;
+}
+.visual-logo-icon {
+  width: 52px; height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #9fd3c7, #61b390);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 8px 24px rgba(159,211,199,0.3);
+}
+.visual-logo-text {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 900;
+  color: white;
+}
+.visual-headline {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 900;
+  color: white;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  text-align: center;
+  position: relative;
+}
+.visual-headline span { color: #9fd3c7; }
+.visual-desc {
+  font-size: 15px;
+  color: rgba(255,255,255,0.72);
+  text-align: center;
+  max-width: 340px;
+  line-height: 1.7;
+  margin-bottom: 48px;
+  position: relative;
+}
+
+/* Stats strip */
+.visual-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 360px;
+  position: relative;
+  margin-bottom: 32px;
+}
+.visual-stat {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 18px 14px;
+  text-align: center;
+  backdrop-filter: blur(4px);
+  animation: fadeUp 0.5s ease both;
+}
+.visual-stat:nth-child(1) { animation-delay: 0.1s; }
+.visual-stat:nth-child(2) { animation-delay: 0.2s; }
+.visual-stat:nth-child(3) { animation-delay: 0.3s; }
+.visual-stat-val {
+  font-family: 'DM Mono', monospace;
+  font-size: 26px;
+  font-weight: 500;
+  color: #9fd3c7;
+  display: block;
+  margin-bottom: 4px;
+}
+.visual-stat-lbl {
+  font-size: 11px;
+  opacity: 0.65;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* Testimonial */
+.visual-quote {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  padding: 20px 22px;
+  max-width: 360px;
+  position: relative;
+}
+.visual-quote::before {
+  content: '"';
+  font-size: 48px;
+  color: #9fd3c7;
+  opacity: 0.4;
+  font-family: serif;
+  line-height: 1;
+  position: absolute;
+  top: 8px; left: 16px;
+}
+.visual-quote-text {
+  font-size: 14px;
+  color: rgba(255,255,255,0.80);
+  line-height: 1.65;
+  padding-left: 8px;
+  padding-top: 16px;
+}
+.visual-quote-author {
+  margin-top: 12px;
+  font-size: 12px;
+  color: #9fd3c7;
+  font-weight: 600;
+  padding-left: 8px;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(16px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+/* ── RIGHT: FORM PANEL ────────────────────────────────────── */
+.auth-form-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 32px;
+  overflow-y: auto;
+}
+.auth-form-box {
+  width: 100%;
+  max-width: 440px;
+  animation: fadeUp 0.5s ease both;
+}
+.auth-form-header {
+  margin-bottom: 32px;
+  text-align: center;
+}
+.auth-form-eyebrow {
+  display: inline-block;
+  background: var(--accent-pale);
+  color: var(--accent);
+  border-radius: 100px;
+  padding: 5px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.auth-form-title {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(24px, 3vw, 34px);
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.auth-form-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Form elements */
+.form-group   { margin-bottom: 18px; }
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+}
+.input-wrap { position: relative; }
+.input-icon {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.form-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 13px 14px 13px 42px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--input-bg);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.form-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: var(--card-bg);
+}
+.toggle-pw {
+  position: absolute;
+  right: 14px; top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 16px;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Remember + Forgot row */
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.remember-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+.remember-check {
+  width: 18px; height: 18px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+.forgot-link {
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.forgot-link:hover { text-decoration: underline; }
+
+/* Submit */
+.btn-submit {
+  width: 100%;
+  background: linear-gradient(135deg, #9fd3c7, #61b390);
+  color: #142d4c;
+  border: none;
+  border-radius: 14px;
+  padding: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: 0.3px;
+}
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(97,179,144,0.35);
+}
+.btn-submit.loading { opacity: 0.7; pointer-events: none; }
+
+/* Register link */
+.auth-switch {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.auth-switch a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+.auth-switch a:hover { text-decoration: underline; }
+
+/* Demo credentials box */
+.demo-box {
+  background: var(--accent-pale);
+  border: 1px solid var(--accent-border);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: var(--accent-dark);
+}
+.demo-box strong { display: block; margin-bottom: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.8px; }
+.demo-box code {
+  background: rgba(0,0,0,0.06);
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 13px;
+}
+</style>
+
+<div class="auth-wrapper">
+
+  <!-- ════════ LEFT: VISUAL ════════ -->
+  <div class="auth-visual">
+
+    <div class="visual-logo">
+      <div class="visual-logo-icon">💚</div>
+      <span class="visual-logo-text">HealthTrack</span>
+    </div>
+
+    <h1 class="visual-headline">
+      Welcome Back to<br>
+      <span>Your Health</span><br>
+      Journey
+    </h1>
+
+    <p class="visual-desc">
+      Your personalized BP recovery plan, meal recommendations, and health insights are waiting for you.
+    </p>
+
+    <div class="visual-stats">
+      <div class="visual-stat">
+        <span class="visual-stat-val">205+</span>
+        <span class="visual-stat-lbl">BP Recipes</span>
+      </div>
+      <div class="visual-stat">
+        <span class="visual-stat-val">7-day</span>
+        <span class="visual-stat-lbl">Meal Plans</span>
+      </div>
+      <div class="visual-stat">
+        <span class="visual-stat-val">16+</span>
+        <span class="visual-stat-lbl">Conditions</span>
+      </div>
+    </div>
+
+    <div class="visual-quote">
+      <div class="visual-quote-text">
+        Since using HealthTrack my BP dropped from 171/112 to 128/82 in 3 months. The meal plan and daily reminders made all the difference.
+      </div>
+      <div class="visual-quote-author">— Priya S., 46 · Hypertension Recovery</div>
+    </div>
+
+  </div>
+
+
+  <!-- ════════ RIGHT: FORM ════════ -->
+  <div class="auth-form-panel">
+    <div class="auth-form-box">
+
+      <div class="auth-form-header">
+        <span class="auth-form-eyebrow">👋 Welcome Back</span>
+        <h2 class="auth-form-title">Sign In to HealthTrack</h2>
+        <p class="auth-form-subtitle">
+          Enter your credentials to continue your health journey.
+        </p>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          <div style="
+            background: {% if category=='danger' %}#fee2e2{% elif category=='success' %}#dcfce7{% else %}#dbeafe{% endif %};
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            color: {% if category=='danger' %}#991b1b{% elif category=='success' %}#166534{% else %}#1e40af{% endif %};
+          ">
+            {% if category == 'danger' %}⚠️{% elif category == 'success' %}✅{% else %}ℹ️{% endif %}
+            {{ message }}
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- LOGIN FORM -->
+      <form
+        method="POST"
+        action="{{ url_for('auth.login') }}"
+        id="loginForm"
+        novalidate
+      >
+
+        <!-- Email -->
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <div class="input-wrap">
+            <span class="input-icon">📧</span>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-input"
+              placeholder="you@example.com"
+              value="{{ email or '' }}"
+              autocomplete="email"
+              autofocus
+              required
+            >
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              placeholder="Your password"
+              autocomplete="current-password"
+              required
+              style="padding-right: 44px;"
+            >
+            <button
+              type="button"
+              class="toggle-pw"
+              onclick="togglePw()"
+            >👁️</button>
+          </div>
+        </div>
+
+        <!-- Remember Me + Forgot -->
+        <div class="form-options">
+          <label class="remember-label">
+            <input
+              type="checkbox"
+              name="remember_me"
+              id="remember_me"
+              class="remember-check"
+            >
+            Keep me signed in
+          </label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-submit" id="submitBtn">
+          <span id="submitText">Sign In →</span>
+        </button>
+
+      </form>
+
+      <div class="auth-switch">
+        Don't have an account?
+        <a href="{{ url_for('auth.register') }}">Create one free</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+<script>
+// ── Toggle password visibility ────────────────────────────
+function togglePw() {
+  const field = document.getElementById('password');
+  const btn   = document.querySelector('.toggle-pw');
+  if (field.type === 'password') {
+    field.type   = 'text';
+    btn.textContent = '🙈';
+  } else {
+    field.type   = 'password';
+    btn.textContent = '👁️';
+  }
+}
+
+// ── Submit loading state ──────────────────────────────────
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!email || !password) {
+    e.preventDefault();
+    return;
+  }
+
+  const btn  = document.getElementById('submitBtn');
+  const text = document.getElementById('submitText');
+  btn.classList.add('loading');
+  text.textContent = '⏳ Signing in...';
+});
+</script>
+
+{% endblock %}

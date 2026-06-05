@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>403 — Access Denied | HealthTrack</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@400;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root{--navy:#142d4c;--mint:#9fd3c7;--sage:#61b390;--bg:#f0f4f8;--card:#ffffff;--border:#d8e2ed;--muted:#6b839e;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--navy);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+    .wrap{text-align:center;max-width:460px;animation:fadeUp 0.5s ease both;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+    .num{font-family:'DM Mono',monospace;font-size:110px;font-weight:500;background:linear-gradient(135deg,#d97706,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:8px;}
+    .emoji{font-size:64px;display:block;margin-bottom:14px;}
+    .title{font-family:'Fraunces',serif;font-size:26px;font-weight:900;margin-bottom:10px;}
+    .desc{font-size:14px;color:var(--muted);line-height:1.7;margin-bottom:28px;}
+    .actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+    .btn-p{background:linear-gradient(135deg,var(--sage),var(--mint));color:var(--navy);border:none;border-radius:12px;padding:12px 26px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:transform 0.18s,box-shadow 0.18s;}
+    .btn-p:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(97,179,144,0.35);}
+    .btn-s{background:var(--card);color:var(--muted);border:1.5px solid var(--border);border-radius:12px;padding:12px 22px;font-size:14px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:all 0.18s;}
+    .btn-s:hover{border-color:var(--sage);color:var(--sage);}
+    .logo{font-family:'Fraunces',serif;font-size:17px;font-weight:900;color:var(--navy);margin-bottom:36px;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .logo-i{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--mint),var(--sage));display:flex;align-items:center;justify-content:center;font-size:17px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo"><div class="logo-i">💚</div> HealthTrack</div>
+    <span class="emoji">🚫</span>
+    <div class="num">403</div>
+    <h1 class="title">Access Denied</h1>
+    <p class="desc">You don't have permission to view this page. Please log in with the correct account or return to the dashboard.</p>
+    <div class="actions">
+      <a href="/dashboard" class="btn-p">🏠 Go to Dashboard</a>
+      <a href="/auth/login" class="btn-s">🔑 Sign In</a>
+    </div>
+  </div>
+</body>
+</html>

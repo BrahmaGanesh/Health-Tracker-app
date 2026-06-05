@@ -1,0 +1,181 @@
+{% extends "base.html" %}
+{% block title %}Step 5 of 5 — Lifestyle | HealthTrack{% endblock %}
+{% block content %}
+<style>
+.onboard-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;background:var(--bg);}
+.onboard-box{width:100%;max-width:600px;animation:fadeUp 0.5s ease both;}
+.ob-progress-wrap{margin-bottom:32px;}
+.ob-progress-steps{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;position:relative;}
+.ob-progress-steps::before{content:'';position:absolute;top:14px;left:14px;right:14px;height:2px;background:var(--border);z-index:0;}
+.ob-step-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:var(--card-bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--text-muted);position:relative;z-index:1;transition:all 0.3s ease;}
+.ob-step-dot.done{background:var(--sage);border-color:var(--sage);color:white;}
+.ob-step-dot.active{background:var(--navy);border-color:var(--navy);color:white;box-shadow:0 0 0 4px var(--accent-glow);}
+.ob-progress-bar{height:4px;background:var(--border);border-radius:100px;overflow:hidden;}
+.ob-progress-fill{height:100%;background:linear-gradient(90deg,var(--sage),var(--mint));border-radius:100px;}
+.ob-progress-label{display:flex;justify-content:space-between;font-size:12px;color:var(--text-muted);margin-top:8px;font-weight:500;}
+.ob-card{background:var(--card-bg);border-radius:var(--radius-lg);border:1px solid var(--border);box-shadow:var(--shadow);padding:36px 40px 40px;}
+@media(max-width:560px){.ob-card{padding:24px 18px;}}
+.ob-step-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.ob-title{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,30px);font-weight:900;color:var(--text-primary);margin-bottom:6px;}
+.ob-subtitle{font-size:14px;color:var(--text-muted);margin-bottom:28px;line-height:1.6;}
+.ob-form-group{margin-bottom:24px;}
+.ob-label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:8px;}
+.option-grid{display:grid;gap:10px;}
+.option-grid.cols2{grid-template-columns:repeat(2,1fr);}
+.option-grid.cols5{grid-template-columns:repeat(5,1fr);}
+@media(max-width:500px){.option-grid.cols5{grid-template-columns:repeat(3,1fr);}.option-grid.cols2{grid-template-columns:1fr 1fr;}}
+.opt-option{position:relative;}
+.opt-option input{position:absolute;opacity:0;width:0;height:0;}
+.opt-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 10px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--input-bg);cursor:pointer;transition:all 0.18s;text-align:center;}
+.opt-icon{font-size:22px;}
+.opt-title{font-size:12px;font-weight:700;color:var(--text-primary);}
+.opt-desc{font-size:10px;color:var(--text-muted);line-height:1.3;}
+.opt-option input:checked + .opt-btn{border-color:var(--accent);background:var(--accent-pale);box-shadow:0 0 0 2px var(--accent-glow);}
+.opt-option input:checked + .opt-btn .opt-title{color:var(--accent-dark);}
+.opt-btn:hover{border-color:var(--accent);}
+
+/* Plan preview card */
+.plan-preview{background:linear-gradient(135deg,var(--navy),#1e3f6e,var(--violet));border-radius:var(--radius);padding:24px 26px;color:white;margin-top:28px;position:relative;overflow:hidden;}
+.plan-preview::after{content:'🎯';position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:80px;opacity:0.08;}
+.plan-preview-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;margin-bottom:16px;position:relative;}
+.plan-preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;position:relative;}
+.plan-stat{background:rgba(255,255,255,0.10);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px 10px;text-align:center;}
+.plan-stat-val{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:#9fd3c7;display:block;margin-bottom:3px;}
+.plan-stat-lbl{font-size:10px;opacity:0.7;text-transform:uppercase;letter-spacing:0.6px;}
+
+/* Complete button */
+.ob-btn-complete{width:100%;background:linear-gradient(135deg,var(--sage),var(--mint));color:var(--navy);border:none;border-radius:var(--radius-sm);padding:16px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:28px;transition:transform 0.18s,box-shadow 0.18s;letter-spacing:0.3px;}
+.ob-btn-complete:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(97,179,144,0.4);}
+.ob-btn-complete.loading{opacity:0.7;pointer-events:none;}
+.ob-nav-back{display:flex;justify-content:flex-start;margin-bottom:0;}
+.ob-btn-back{background:transparent;color:var(--text-muted);border:none;padding:0;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;text-decoration:none;display:flex;align-items:center;gap:4px;margin-top:16px;}
+.ob-btn-back:hover{color:var(--accent);}
+</style>
+
+<div class="onboard-wrap">
+  <div class="onboard-box">
+    <div class="ob-progress-wrap">
+      <div class="ob-progress-steps">
+        <div class="ob-step-dot done">✓</div>
+        <div class="ob-step-dot done">✓</div>
+        <div class="ob-step-dot done">✓</div>
+        <div class="ob-step-dot done">✓</div>
+        <div class="ob-step-dot active">5</div>
+      </div>
+      <div class="ob-progress-bar"><div class="ob-progress-fill" style="width:100%"></div></div>
+      <div class="ob-progress-label"><span>Step 5 of 5 — Almost done!</span><span>Lifestyle</span></div>
+    </div>
+
+    <div class="ob-card">
+      <div class="ob-step-label">🌿 Step 5 — Your Lifestyle</div>
+      <h2 class="ob-title">Diet & Activity Level</h2>
+      <p class="ob-subtitle">Last step. This determines which recipes we recommend and how we calculate your energy needs.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat,msg in messages %}
+        <div style="background:var(--danger-light);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:13px;font-weight:600;color:#991b1b;">⚠️ {{ msg }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+
+      <form method="POST" action="{{ url_for('profile.onboarding_step5') }}" id="step5Form">
+
+        <!-- Diet Preference -->
+        <div class="ob-form-group">
+          <label class="ob-label">Diet Type</label>
+          <div class="option-grid cols2">
+            {% set diets = [
+              ('vegetarian',     '🥦', 'Vegetarian',     'No meat or fish'),
+              ('non_vegetarian', '🍗', 'Non-Vegetarian', 'Includes meat & fish'),
+              ('vegan',          '🌱', 'Vegan',          'No animal products'),
+              ('eggetarian',     '🥚', 'Eggetarian',     'Vegetarian + eggs'),
+            ] %}
+            {% for val,icon,title,desc in diets %}
+            <label class="opt-option">
+              <input type="radio" name="diet_preference" value="{{ val }}"
+                     {% if (diet_pref or 'vegetarian') == val %}checked{% endif %}
+                     onchange="updatePreview()">
+              <div class="opt-btn">
+                <span class="opt-icon">{{ icon }}</span>
+                <span class="opt-title">{{ title }}</span>
+                <span class="opt-desc">{{ desc }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Activity Level -->
+        <div class="ob-form-group">
+          <label class="ob-label">Activity Level</label>
+          <div class="option-grid cols5">
+            {% set activities = [
+              ('sedentary',   '🪑', 'Sedentary',  'Little / no exercise'),
+              ('light',       '🚶', 'Light',      '1–3 days/week'),
+              ('moderate',    '🏃', 'Moderate',   '3–5 days/week'),
+              ('active',      '⚡', 'Active',     '6–7 days/week'),
+              ('very_active', '🏋️', 'Very Active','Intense daily'),
+            ] %}
+            {% for val,icon,title,desc in activities %}
+            <label class="opt-option">
+              <input type="radio" name="activity_level" value="{{ val }}"
+                     {% if (activity_level or 'sedentary') == val %}checked{% endif %}
+                     onchange="updatePreview()">
+              <div class="opt-btn">
+                <span class="opt-icon">{{ icon }}</span>
+                <span class="opt-title">{{ title }}</span>
+                <span class="opt-desc">{{ desc }}</span>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Plan Preview -->
+        <div class="plan-preview" id="planPreview">
+          <div class="plan-preview-title">✨ Your Personalised Plan Preview</div>
+          <div class="plan-preview-grid">
+            <div class="plan-stat">
+              <span class="plan-stat-val" id="ppCal">{{ calorie_preview or '—' }}</span>
+              <span class="plan-stat-lbl">Daily Calories</span>
+            </div>
+            <div class="plan-stat">
+              <span class="plan-stat-val" id="ppPro">{{ protein_preview or '—' }}g</span>
+              <span class="plan-stat-lbl">Protein / day</span>
+            </div>
+            <div class="plan-stat">
+              <span class="plan-stat-val">2.5L</span>
+              <span class="plan-stat-lbl">Water target</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Complete Button -->
+        <button type="submit" class="ob-btn-complete" id="completeBtn">
+          🎉 Complete Setup — Get My Plan
+        </button>
+
+      </form>
+
+      <a href="{{ url_for('profile.onboarding_step4') }}" class="ob-btn-back">← Back to Goals</a>
+
+    </div>
+  </div>
+</div>
+
+<script>
+async function updatePreview() {
+  try {
+    const resp = await fetch("{{ url_for('profile.stats') }}");
+    const data = await resp.json();
+    if (data.calorie_target) document.getElementById('ppCal').textContent = data.calorie_target;
+    if (data.protein_target) document.getElementById('ppPro').textContent = data.protein_target + 'g';
+  } catch(e) {}
+}
+
+document.getElementById('step5Form').addEventListener('submit', function() {
+  const btn = document.getElementById('completeBtn');
+  btn.classList.add('loading');
+  btn.innerHTML = '⏳ Setting up your plan...';
+});
+</script>
+{% endblock %}

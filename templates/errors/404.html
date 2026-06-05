@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Page Not Found | HealthTrack</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@700;900&family=DM+Sans:wght@400;600;700&family=DM+Mono:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #142d4c; --mint: #9fd3c7; --sage: #61b390;
+      --violet: #4f3b78; --bg: #f0f4f8; --card: #ffffff;
+      --border: #d8e2ed; --text: #142d4c; --muted: #6b839e;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .error-wrap {
+      text-align: center;
+      max-width: 480px;
+      animation: fadeUp 0.5s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .error-number {
+      font-family: 'DM Mono', monospace;
+      font-size: 120px;
+      font-weight: 500;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--navy), var(--violet));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+    .error-emoji {
+      font-size: 72px;
+      display: block;
+      margin-bottom: 16px;
+      animation: bobble 3s ease-in-out infinite;
+    }
+    @keyframes bobble {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+    .error-title {
+      font-family: 'Fraunces', serif;
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--navy);
+      margin-bottom: 12px;
+    }
+    .error-desc {
+      font-size: 15px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+    .error-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-home {
+      background: linear-gradient(135deg, var(--sage), var(--mint));
+      color: var(--navy);
+      border: none;
+      border-radius: 12px;
+      padding: 12px 28px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: transform 0.18s, box-shadow 0.18s;
+    }
+    .btn-home:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(97,179,144,0.35);
+    }
+    .btn-back {
+      background: var(--card);
+      color: var(--muted);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.18s;
+    }
+    .btn-back:hover { border-color: var(--sage); color: var(--sage); }
+    .logo {
+      font-family: 'Fraunces', serif;
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--navy);
+      margin-bottom: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--mint), var(--sage));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="error-wrap">
+    <div class="logo"><div class="logo-icon">💚</div> HealthTrack</div>
+    <span class="error-emoji">🔍</span>
+    <div class="error-number">404</div>
+    <h1 class="error-title">Page Not Found</h1>
+    <p class="error-desc">
+      The page you're looking for doesn't exist or has been moved.
+      Let's get you back on track with your health journey.
+    </p>
+    <div class="error-actions">
+      <a href="/dashboard" class="btn-home">🏠 Go to Dashboard</a>
+      <a href="javascript:history.back()" class="btn-back">← Go Back</a>
+    </div>
+  </div>
+</body>
+</html>

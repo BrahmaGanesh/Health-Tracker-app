@@ -1,0 +1,618 @@
+{% extends "base.html" %}
+{% block title %}Create Account | HealthTrack{% endblock %}
+
+{% block guest_content %}
+<style>
+/* ── AUTH PAGE ─────────────────────────────────────────────── */
+.auth-wrapper {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--bg);
+}
+@media (max-width: 900px) {
+  .auth-wrapper { grid-template-columns: 1fr; }
+  .auth-visual   { display: none; }
+}
+
+/* LEFT — Visual Panel */
+.auth-visual {
+  background: linear-gradient(145deg, #142d4c 0%, #1e3f6e 40%, #4f3b78 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.auth-visual::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 20% 80%, rgba(159,211,199,0.15) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(79,59,120,0.3) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(97,179,144,0.08) 0%, transparent 70%);
+}
+.auth-visual::after {
+  content: '🌿';
+  position: absolute;
+  bottom: 40px; right: 40px;
+  font-size: 160px;
+  opacity: 0.06;
+}
+
+.visual-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 48px;
+  position: relative;
+}
+.visual-logo-icon {
+  width: 52px; height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #9fd3c7, #61b390);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  box-shadow: 0 8px 24px rgba(159,211,199,0.3);
+}
+.visual-logo-text {
+  font-family: 'Fraunces', serif;
+  font-size: 24px;
+  font-weight: 900;
+  color: white;
+}
+
+.visual-headline {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 900;
+  color: white;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  text-align: center;
+  position: relative;
+}
+.visual-headline span { color: #9fd3c7; }
+
+.visual-desc {
+  font-size: 15px;
+  color: rgba(255,255,255,0.72);
+  text-align: center;
+  max-width: 340px;
+  line-height: 1.7;
+  margin-bottom: 44px;
+  position: relative;
+}
+
+.visual-features {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  max-width: 340px;
+  position: relative;
+}
+.visual-feature {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s;
+  animation: slideInLeft 0.5s ease both;
+}
+.visual-feature:nth-child(1) { animation-delay: 0.1s; }
+.visual-feature:nth-child(2) { animation-delay: 0.2s; }
+.visual-feature:nth-child(3) { animation-delay: 0.3s; }
+.visual-feature:nth-child(4) { animation-delay: 0.4s; }
+.visual-feature-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: rgba(159,211,199,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+@keyframes slideInLeft {
+  from { opacity:0; transform: translateX(-20px); }
+  to   { opacity:1; transform: translateX(0); }
+}
+
+/* RIGHT — Form Panel */
+.auth-form-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 48px 32px;
+  overflow-y: auto;
+}
+
+.auth-form-box {
+  width: 100%;
+  max-width: 460px;
+  animation: fadeUp 0.5s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform: translateY(24px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+.auth-form-header {
+  margin-bottom: 32px;
+  text-align: center;
+}
+.auth-form-eyebrow {
+  display: inline-block;
+  background: var(--accent-pale);
+  color: var(--accent);
+  border-radius: 100px;
+  padding: 5px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.auth-form-title {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 900;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.auth-form-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Form elements */
+.form-group {
+  margin-bottom: 18px;
+}
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+}
+.input-wrap {
+  position: relative;
+}
+.input-icon {
+  position: absolute;
+  left: 14px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+.form-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 12px 14px 12px 42px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--text-primary);
+  background: var(--input-bg);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+}
+.form-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: var(--card-bg);
+}
+.form-input.error { border-color: #ef4444; }
+.form-input.success { border-color: #22c55e; }
+
+/* Password toggle */
+.input-wrap .toggle-pw {
+  position: absolute;
+  right: 14px; top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 16px;
+  padding: 0;
+  line-height: 1;
+}
+
+/* Password strength bar */
+.pw-strength-wrap {
+  margin-top: 8px;
+}
+.pw-strength-bar {
+  height: 4px;
+  background: var(--border);
+  border-radius: 100px;
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+.pw-strength-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.4s ease, background 0.4s ease;
+  width: 0%;
+}
+.pw-strength-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Email availability indicator */
+.email-status {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 16px;
+}
+.email-status.available { color: #22c55e; }
+.email-status.taken     { color: #ef4444; }
+.email-status.checking  { color: var(--text-muted); }
+
+/* Submit button */
+.btn-submit {
+  width: 100%;
+  background: linear-gradient(135deg, #9fd3c7, #61b390);
+  color: #142d4c;
+  border: none;
+  border-radius: 14px;
+  padding: 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s, opacity 0.18s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 24px;
+  letter-spacing: 0.3px;
+}
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(97,179,144,0.35);
+}
+.btn-submit:active { transform: translateY(0); }
+.btn-submit.loading { opacity: 0.7; pointer-events: none; }
+
+/* Divider */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 22px 0;
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.auth-divider span {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* Switch link */
+.auth-switch {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+.auth-switch a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+.auth-switch a:hover { text-decoration: underline; }
+
+/* Terms */
+.terms-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 16px;
+  line-height: 1.6;
+}
+.terms-text a { color: var(--accent); text-decoration: none; }
+</style>
+
+<div class="auth-wrapper">
+
+  <!-- ════════ LEFT: VISUAL PANEL ════════ -->
+  <div class="auth-visual">
+
+    <div class="visual-logo">
+      <div class="visual-logo-icon">💚</div>
+      <span class="visual-logo-text">HealthTrack</span>
+    </div>
+
+    <h1 class="visual-headline">
+      Your Adaptive<br>
+      <span>Health Recovery</span><br>
+      Platform
+    </h1>
+
+    <p class="visual-desc">
+      Personalized nutrition, BP tracking, and health insights — all built around your specific conditions and goals.
+    </p>
+
+    <div class="visual-features">
+      <div class="visual-feature">
+        <div class="visual-feature-icon">❤️</div>
+        BP-specific meal recommendations
+      </div>
+      <div class="visual-feature">
+        <div class="visual-feature-icon">📊</div>
+        Daily health tracking & analytics
+      </div>
+      <div class="visual-feature">
+        <div class="visual-feature-icon">🛒</div>
+        Auto-generated grocery lists
+      </div>
+      <div class="visual-feature">
+        <div class="visual-feature-icon">💊</div>
+        Medicine reminders & streak tracking
+      </div>
+    </div>
+
+  </div>
+
+
+  <!-- ════════ RIGHT: FORM PANEL ════════ -->
+  <div class="auth-form-panel">
+    <div class="auth-form-box">
+
+      <div class="auth-form-header">
+        <span class="auth-form-eyebrow">✨ Free Forever</span>
+        <h2 class="auth-form-title">Create Your Account</h2>
+        <p class="auth-form-subtitle">
+          Start your personalized health recovery journey today.
+        </p>
+      </div>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+          <div style="background:{% if category=='danger' %}#fee2e2{% elif category=='success' %}#dcfce7{% else %}#dbeafe{% endif %};
+                      border-radius:12px; padding:12px 16px; margin-bottom:16px;
+                      font-size:13px; font-weight:600;
+                      color:{% if category=='danger' %}#991b1b{% elif category=='success' %}#166534{% else %}#1e40af{% endif %};">
+            {% if category == 'danger' %}⚠️{% elif category == 'success' %}✅{% else %}ℹ️{% endif %}
+            {{ message }}
+          </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- REGISTER FORM -->
+      <form method="POST" action="{{ url_for('auth.register') }}" id="registerForm" novalidate>
+        {{ csrf_token() if csrf_token is defined else '' }}
+
+        <!-- Name -->
+        <div class="form-group">
+          <label class="form-label" for="name">Full Name</label>
+          <div class="input-wrap">
+            <span class="input-icon">👤</span>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              class="form-input"
+              placeholder="e.g. Priya Sharma"
+              value="{{ name or '' }}"
+              autocomplete="name"
+              required
+            >
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <div class="input-wrap">
+            <span class="input-icon">📧</span>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-input"
+              placeholder="you@example.com"
+              value="{{ email or '' }}"
+              autocomplete="email"
+              required
+            >
+          </div>
+          <div class="email-status" id="emailStatus"></div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              placeholder="Minimum 6 characters"
+              autocomplete="new-password"
+              required
+              style="padding-right:44px;"
+            >
+            <button type="button" class="toggle-pw" onclick="togglePw('password', this)">👁️</button>
+          </div>
+          <div class="pw-strength-wrap">
+            <div class="pw-strength-bar">
+              <div class="pw-strength-fill" id="pwStrengthFill"></div>
+            </div>
+            <div class="pw-strength-text" id="pwStrengthText"></div>
+          </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="form-group">
+          <label class="form-label" for="confirm_password">Confirm Password</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input
+              type="password"
+              id="confirm_password"
+              name="confirm_password"
+              class="form-input"
+              placeholder="Repeat your password"
+              autocomplete="new-password"
+              required
+              style="padding-right:44px;"
+            >
+            <button type="button" class="toggle-pw" onclick="togglePw('confirm_password', this)">👁️</button>
+          </div>
+          <div id="pwMatchStatus" style="font-size:11px; font-weight:600; margin-top:5px; min-height:16px;"></div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-submit" id="submitBtn">
+          <span id="submitText">Create My Account →</span>
+        </button>
+
+      </form>
+
+      <p class="terms-text">
+        By creating an account you agree to our
+        <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.
+        Your health data is private and never shared.
+      </p>
+
+      <div class="auth-switch">
+        Already have an account?
+        <a href="{{ url_for('auth.login') }}">Sign in here</a>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+
+<script>
+// ── Toggle password visibility ────────────────────────────
+function togglePw(fieldId, btn) {
+  const field = document.getElementById(fieldId);
+  if (field.type === 'password') {
+    field.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    field.type = 'password';
+    btn.textContent = '👁️';
+  }
+}
+
+// ── Password strength ─────────────────────────────────────
+document.getElementById('password').addEventListener('input', function() {
+  const val    = this.value;
+  const fill   = document.getElementById('pwStrengthFill');
+  const text   = document.getElementById('pwStrengthText');
+  let score    = 0;
+  if (val.length >= 6)                      score++;
+  if (val.length >= 10)                     score++;
+  if (/[A-Z]/.test(val))                    score++;
+  if (/[0-9]/.test(val))                    score++;
+  if (/[^A-Za-z0-9]/.test(val))            score++;
+
+  const levels = [
+    { pct: '0%',   color: 'transparent', label: '' },
+    { pct: '25%',  color: '#ef4444',     label: 'Weak' },
+    { pct: '50%',  color: '#f59e0b',     label: 'Fair' },
+    { pct: '75%',  color: '#3b82f6',     label: 'Good' },
+    { pct: '100%', color: '#22c55e',     label: 'Strong ✓' },
+  ];
+  const lvl = levels[Math.min(score, 4)];
+  fill.style.width      = val.length ? lvl.pct : '0%';
+  fill.style.background = lvl.color;
+  text.textContent      = val.length ? lvl.label : '';
+  text.style.color      = lvl.color;
+});
+
+// ── Password match check ──────────────────────────────────
+document.getElementById('confirm_password').addEventListener('input', function() {
+  const pw      = document.getElementById('password').value;
+  const status  = document.getElementById('pwMatchStatus');
+  if (!this.value) { status.textContent = ''; return; }
+  if (this.value === pw) {
+    status.textContent = '✓ Passwords match';
+    status.style.color = '#22c55e';
+  } else {
+    status.textContent = '✗ Passwords do not match';
+    status.style.color = '#ef4444';
+  }
+});
+
+// ── Email availability check ──────────────────────────────
+let emailTimer;
+document.getElementById('email').addEventListener('input', function() {
+  const status = document.getElementById('emailStatus');
+  const email  = this.value.trim();
+  clearTimeout(emailTimer);
+  if (!email.includes('@')) { status.textContent = ''; return; }
+  status.className   = 'email-status checking';
+  status.textContent = '⏳ Checking...';
+  emailTimer = setTimeout(async () => {
+    try {
+      const resp = await fetch("{{ url_for('auth.check_email') }}", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'email=' + encodeURIComponent(email)
+      });
+      const data = await resp.json();
+      if (data.available) {
+        status.className   = 'email-status available';
+        status.textContent = '✓ ' + data.message;
+      } else {
+        status.className   = 'email-status taken';
+        status.textContent = '✗ ' + data.message;
+      }
+    } catch { status.textContent = ''; }
+  }, 600);
+});
+
+// ── Submit loading state ──────────────────────────────────
+document.getElementById('registerForm').addEventListener('submit', function() {
+  const btn  = document.getElementById('submitBtn');
+  const text = document.getElementById('submitText');
+  btn.classList.add('loading');
+  text.textContent = '⏳ Creating account...';
+});
+</script>
+
+{% endblock %}

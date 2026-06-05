@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}Alerts | HealthTrack{% endblock %}
+{% block page_title %}Health Alerts{% endblock %}
+
+{% block content %}
+<style>
+.alerts-hero{background:linear-gradient(135deg,#7c2d12 0%,#b91c1c 50%,#ef4444 100%);border-radius:var(--radius-lg);padding:28px 32px;color:white;margin-bottom:24px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.alerts-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/svg%3E");}
+.alerts-hero::after{content:'🔔';position:absolute;right:36px;top:50%;transform:translateY(-50%);font-size:120px;opacity:0.09;}
+.hero-left{position:relative;}
+.hero-eyebrow{display:inline-block;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:100px;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+.hero-title{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,34px);font-weight:900;margin-bottom:6px;}
+.hero-sub{font-size:14px;opacity:0.78;}
+.hero-actions{position:relative;display:flex;gap:10px;flex-wrap:wrap;}
+.btn-hero-action{background:rgba(255,255,255,0.15);color:white;border:1.5px solid rgba(255,255,255,0.3);border-radius:var(--radius-sm);padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:6px;transition:all 0.18s;cursor:pointer;}
+.btn-hero-action:hover{background:rgba(255,255,255,0.25);color:white;}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+@media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:480px){.stats-row{grid-template-columns:1fr 1fr;}}
+.alert-stat{background:var(--card-bg);border-radius:var(--radius);padding:18px;border:1px solid var(--border);box-shadow:var(--shadow-sm);text-align:center;animation:fadeUp 0.4s ease both;}
+.alert-stat:nth-child(1){animation-delay:0.05s;border-top:3px solid #ef4444;}
+.alert-stat:nth-child(2){animation-delay:0.10s;border-top:3px solid #f59e0b;}
+.alert-stat:nth-child(3){animation-delay:0.15s;border-top:3px solid #3b82f6;}
+.alert-stat:nth-child(4){animation-delay:0.20s;border-top:3px solid var(--sage);}
+.as-val{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;display:block;margin-bottom:4px;}
+.as-val.red{color:#ef4444;} .as-val.yellow{color:#f59e0b;} .as-val.blue{color:#3b82f6;} .as-val.green{color:var(--sage);}
+.as-lbl{font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);font-weight:600;}
+
+.section-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:22px;animation:fadeUp 0.4s ease both;}
+.section-hdr{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.section-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--text-primary);display:flex;align-items:center;gap:8px;}
+.section-count{border-radius:100px;padding:4px 12px;font-size:12px;font-weight:600;}
+
+.alert-row{display:flex;gap:14px;padding:16px 22px;border-bottom:1px solid var(--border);transition:background 0.15s;align-items:flex-start;}
+.alert-row:last-child{border-bottom:none;}
+.alert-row:hover{background:var(--bg);}
+.alert-row.dismissed{opacity:0.4;}
+
+.alert-type-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.dot-emergency{background:#ef4444;animation:pulseDot 1.5s infinite;}
+.dot-warning{background:#f59e0b;}
+.dot-recommendation{background:#3b82f6;}
+.dot-reminder{background:var(--sage);}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(1.4);}}
+
+.alert-icon-wrap{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.aw-emergency{background:#fee2e2;} .aw-warning{background:#fef3c7;}
+.aw-recommendation{background:#dbeafe;} .aw-reminder{background:var(--accent-pale);}
+
+.alert-content{flex:1;}
+.alert-title{font-size:14px;font-weight:700;color:var(--text-primary);margin-bottom:4px;}
+.alert-message{font-size:13px;color:var(--text-muted);line-height:1.55;margin-bottom:8px;}
+.alert-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.alert-time{font-size:11px;color:var(--text-muted);}
+.alert-cat-chip{background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:2px 10px;font-size:10px;font-weight:600;color:var(--text-muted);}
+
+.alert-actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0;}
+.btn-read{background:var(--accent-pale);color:var(--accent-dark);border:1px solid var(--accent-border);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;text-decoration:none;transition:all 0.15s;white-space:nowrap;}
+.btn-read:hover{background:var(--accent);color:white;border-color:var(--accent);}
+.btn-dismiss{background:var(--bg);color:var(--text-muted);border:1px solid var(--border);border-radius:8px;padding:5px 12px;font-size:11px;font-weight:600;text-decoration:none;transition:all 0.15s;white-space:nowrap;}
+.btn-dismiss:hover{background:#fee2e2;color:#991b1b;border-color:#fca5a5;}
+
+.type-badge{border-radius:100px;padding:3px 10px;font-size:10px;font-weight:700;}
+.tb-emergency{background:#fee2e2;color:#991b1b;}
+.tb-warning{background:#fef3c7;color:#92400e;}
+.tb-recommendation{background:#dbeafe;color:#1e40af;}
+.tb-reminder{background:var(--accent-pale);color:var(--accent-dark);}
+
+.all-clear{padding:50px 30px;text-align:center;}
+.all-clear-icon{font-size:56px;display:block;margin-bottom:14px;}
+.all-clear-title{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--text-primary);margin-bottom:8px;}
+.all-clear-desc{font-size:14px;color:var(--text-muted);}
+</style>
+
+<!-- HERO -->
+<div class="alerts-hero animate-fadeIn">
+  <div class="hero-left">
+    <div class="hero-eyebrow">🔔 Health Alerts</div>
+    <h1 class="hero-title">Alert Centre</h1>
+    <p class="hero-sub">Stay informed about your health status with real-time personalised alerts.</p>
+  </div>
+  <div class="hero-actions">
+    {% if unread %}
+    <a href="{{ url_for('alert.mark_all_read') }}" class="btn-hero-action">✓ Mark All Read</a>
+    {% endif %}
+    <a href="{{ url_for('alert.dismiss_all') }}" class="btn-hero-action">✕ Dismiss All</a>
+  </div>
+</div>
+
+<!-- STATS ROW -->
+<div class="stats-row">
+  {% set emergency_count    = unread | selectattr('alert_type','equalto','emergency')      | list | length %}
+  {% set warning_count      = unread | selectattr('alert_type','equalto','warning')        | list | length %}
+  {% set recommend_count    = unread | selectattr('alert_type','equalto','recommendation') | list | length %}
+  {% set reminder_count     = unread | selectattr('alert_type','equalto','reminder')       | list | length %}
+
+  <div class="alert-stat">
+    <span class="as-val red">{{ emergency_count }}</span>
+    <span class="as-lbl">🚨 Emergency</span>
+  </div>
+  <div class="alert-stat">
+    <span class="as-val yellow">{{ warning_count }}</span>
+    <span class="as-lbl">⚠️ Warnings</span>
+  </div>
+  <div class="alert-stat">
+    <span class="as-val blue">{{ recommend_count }}</span>
+    <span class="as-lbl">💡 Recommendations</span>
+  </div>
+  <div class="alert-stat">
+    <span class="as-val green">{{ reminder_count }}</span>
+    <span class="as-lbl">📋 Reminders</span>
+  </div>
+</div>
+
+<!-- UNREAD ALERTS -->
+<div class="section-card">
+  <div class="section-hdr">
+    <div class="section-title">🔴 Active Alerts</div>
+    {% if unread %}
+    <span class="section-count" style="background:#fee2e2;color:#991b1b;">{{ unread|length }} unread</span>
+    {% else %}
+    <span class="section-count" style="background:#dcfce7;color:#166534;">All clear</span>
+    {% endif %}
+  </div>
+
+  {% if unread %}
+    {% set type_icons = {
+      'emergency':      '🚨',
+      'warning':        '⚠️',
+      'recommendation': '💡',
+      'reminder':       '📋'
+    } %}
+
+    {% for alert in unread %}
+    <div class="alert-row">
+      <div class="alert-type-dot dot-{{ alert.alert_type }}"></div>
+      <div class="alert-icon-wrap aw-{{ alert.alert_type }}">
+        {{ type_icons.get(alert.alert_type, '🔔') }}
+      </div>
+      <div class="alert-content">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+          <div class="alert-title">{{ alert.title }}</div>
+          <span class="type-badge tb-{{ alert.alert_type }}">{{ alert.alert_type|title }}</span>
+        </div>
+        <div class="alert-message">{{ alert.message }}</div>
+        <div class="alert-meta">
+          <span class="alert-time">{{ alert.created_at.strftime('%d %b %Y · %I:%M %p') }}</span>
+          {% if alert.category %}
+          <span class="alert-cat-chip">{{ alert.category|title }}</span>
+          {% endif %}
+          {% if alert.trigger_value %}
+          <span class="alert-cat-chip">{{ alert.trigger_value|int }}</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="alert-actions">
+        <a href="{{ url_for('alert.mark_read', alert_id=alert.id) }}" class="btn-read">✓ Read</a>
+        {% if alert.alert_type != 'emergency' %}
+        <a href="{{ url_for('alert.dismiss', alert_id=alert.id) }}" class="btn-dismiss">✕ Dismiss</a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+  {% else %}
+  <div class="all-clear">
+    <span class="all-clear-icon">✅</span>
+    <div class="all-clear-title">All Clear!</div>
+    <div class="all-clear-desc">No active alerts right now. Keep tracking your health metrics daily to stay ahead of any issues.</div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- RECENT READ ALERTS -->
+{% if read %}
+<div class="section-card">
+  <div class="section-hdr">
+    <div class="section-title">📋 Recent History</div>
+    <span class="section-count" style="background:var(--bg);color:var(--text-muted);border:1px solid var(--border);">Last 30 days</span>
+  </div>
+
+  {% for alert in read %}
+  <div class="alert-row dismissed">
+    <div class="alert-type-dot" style="background:var(--border);"></div>
+    <div class="alert-icon-wrap" style="background:var(--bg);">
+      {% if alert.alert_type == 'emergency' %}🚨
+      {% elif alert.alert_type == 'warning' %}⚠️
+      {% elif alert.alert_type == 'recommendation' %}💡
+      {% else %}📋{% endif %}
+    </div>
+    <div class="alert-content">
+      <div class="alert-title" style="color:var(--text-muted);">{{ alert.title }}</div>
+      <div class="alert-message" style="font-size:12px;">{{ alert.message[:120] }}{% if alert.message|length > 120 %}...{% endif %}</div>
+      <div class="alert-meta">
+        <span class="alert-time">{{ alert.created_at.strftime('%d %b %Y') }}</span>
+        <span class="alert-cat-chip">{{ alert.alert_type|title }}</span>
+        <span class="alert-cat-chip" style="background:#dcfce7;color:#166534;">Read ✓</span>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ALERT GUIDE -->
+<div class="section-card" style="animation-delay:0.3s;">
+  <div class="section-hdr">
+    <div class="section-title">📖 Alert Guide</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0;">
+    {% set guide = [
+      ('🚨','Emergency','Immediate action needed — BP crisis, very high sugar. Cannot be dismissed. See a doctor today.','#fee2e2','#991b1b'),
+      ('⚠️','Warning','Concerning trend detected — BP rising, sugar increasing. Action needed within 24–48 hours.','#fef3c7','#92400e'),
+      ('💡','Recommendation','Nutritional or lifestyle suggestion — low protein, high sodium, insufficient hydration.','#dbeafe','#1e40af'),
+      ('📋','Reminder','Daily tracking reminders — log BP, take medicine, drink water.','var(--accent-pale)','var(--accent-dark)'),
+    ] %}
+    {% for icon,type,desc,bg,color in guide %}
+    <div style="padding:16px 20px;border-right:{% if loop.index % 2 == 1 %}1px solid var(--border){% else %}none{% endif %};border-bottom:{% if loop.index <= 2 %}1px solid var(--border){% else %}none{% endif %};">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+        <span style="font-size:18px;">{{ icon }}</span>
+        <span style="font-size:13px;font-weight:700;color:var(--text-primary);">{{ type }}</span>
+        <span style="background:{{ bg }};color:{{ color }};border-radius:100px;padding:2px 8px;font-size:10px;font-weight:700;">{{ type }}</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-muted);line-height:1.5;">{{ desc }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

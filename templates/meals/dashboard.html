@@ -1,0 +1,196 @@
+{% extends "base.html" %}
+{% block title %}Meal Plan | HealthTrack{% endblock %}
+{% block page_title %}Weekly Meal Plan{% endblock %}
+
+{% block content %}
+<style>
+.meals-hero{background:linear-gradient(135deg,#064e3b 0%,#065f46 50%,#047857 100%);border-radius:var(--radius-lg);padding:28px 32px;color:white;margin-bottom:24px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.meals-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/svg%3E");}
+.meals-hero::after{content:'🍱';position:absolute;right:36px;top:50%;transform:translateY(-50%);font-size:120px;opacity:0.09;}
+.hero-left{position:relative;}
+.hero-eyebrow{display:inline-block;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:100px;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+.hero-title{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,34px);font-weight:900;margin-bottom:6px;}
+.hero-sub{font-size:14px;opacity:0.78;}
+.hero-btns{position:relative;display:flex;gap:10px;flex-wrap:wrap;}
+.btn-gen{background:rgba(255,255,255,0.15);color:white;border:1.5px solid rgba(255,255,255,0.3);border-radius:var(--radius-sm);padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:6px;transition:all 0.18s;}
+.btn-gen:hover{background:rgba(255,255,255,0.25);color:white;}
+.btn-gen.primary-btn{background:linear-gradient(135deg,#9fd3c7,#61b390);color:#064e3b;border:none;}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+@media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr);}}
+.ms-card{background:var(--card-bg);border-radius:var(--radius);padding:18px;border:1px solid var(--border);box-shadow:var(--shadow-sm);animation:fadeUp 0.4s ease both;text-align:center;}
+.ms-card:nth-child(1){animation-delay:0.05s;} .ms-card:nth-child(2){animation-delay:0.10s;}
+.ms-card:nth-child(3){animation-delay:0.15s;} .ms-card:nth-child(4){animation-delay:0.20s;}
+.ms-val{font-family:'DM Mono',monospace;font-size:24px;font-weight:500;display:block;margin-bottom:4px;}
+.ms-lbl{font-size:11px;text-transform:uppercase;letter-spacing:0.6px;color:var(--text-muted);}
+
+.days-grid{display:flex;flex-direction:column;gap:20px;}
+.day-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;animation:fadeUp 0.4s ease both;}
+.day-header{padding:14px 22px;background:var(--bg);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.day-name{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--text-primary);}
+.day-name.today{color:var(--sage);}
+.day-stats{display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+.day-stat-chip{background:var(--bg);border:1px solid var(--border);border-radius:100px;padding:4px 12px;font-size:11px;font-weight:600;color:var(--text-muted);}
+.day-stat-chip.green{background:var(--accent-pale);color:var(--accent-dark);border-color:var(--accent-border);}
+
+.meals-row{display:grid;grid-template-columns:repeat(5,1fr);gap:0;}
+@media(max-width:1000px){.meals-row{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:600px){.meals-row{grid-template-columns:1fr 1fr;}}
+.meal-slot{padding:14px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);transition:background 0.15s;position:relative;}
+.meal-slot:last-child{border-right:none;}
+.meal-slot:hover{background:var(--bg);}
+.meal-slot.completed{background:rgba(97,179,144,0.05);}
+.slot-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:6px;}
+.slot-emoji{font-size:16px;display:block;margin-bottom:4px;}
+.slot-name{font-size:12px;font-weight:600;color:var(--text-primary);line-height:1.4;margin-bottom:6px;}
+.slot-name.done{text-decoration:line-through;color:var(--text-muted);}
+.slot-cal{font-size:10px;font-family:'DM Mono',monospace;color:var(--text-muted);margin-bottom:8px;}
+.slot-actions{display:flex;gap:4px;}
+.slot-btn{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:11px;text-decoration:none;border:none;cursor:pointer;transition:all 0.15s;}
+.slot-btn.done-btn{background:var(--accent-pale);color:var(--accent-dark);}
+.slot-btn.done-btn:hover{background:var(--sage);color:white;}
+.slot-btn.regen-btn{background:var(--bg);border:1px solid var(--border);color:var(--text-muted);}
+.slot-btn.regen-btn:hover{background:var(--navy);color:white;border-color:var(--navy);}
+.slot-btn.done-icon{background:#dcfce7;color:#166534;}
+.slot-empty{color:var(--text-muted);font-size:12px;font-style:italic;padding:8px 0;}
+
+.no-plan-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:60px 40px;text-align:center;}
+.np-icon{font-size:64px;display:block;margin-bottom:16px;animation:bobble 3s ease-in-out infinite;}
+@keyframes bobble{0%,100%{transform:translateY(0);}50%{transform:translateY(-10px);}}
+.np-title{font-family:'Fraunces',serif;font-size:26px;font-weight:900;color:var(--text-primary);margin-bottom:10px;}
+.np-desc{font-size:14px;color:var(--text-muted);max-width:400px;margin:0 auto 24px;line-height:1.65;}
+.btn-generate{background:linear-gradient(135deg,var(--sage),var(--mint));color:var(--navy);border:none;border-radius:var(--radius-sm);padding:14px 32px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:transform 0.18s,box-shadow 0.18s;}
+.btn-generate:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(97,179,144,0.35);color:var(--navy);}
+</style>
+
+<!-- HERO -->
+<div class="meals-hero animate-fadeIn">
+  <div class="hero-left">
+    <div class="hero-eyebrow">🍱 Personalised Meals</div>
+    <h1 class="hero-title">Weekly Meal Plan</h1>
+    <p class="hero-sub">
+      Condition-specific meals for the week of {{ week_start.strftime('%d %b %Y') }}.
+    </p>
+  </div>
+  <div class="hero-btns">
+    {% if active_plan %}
+    <a href="{{ url_for('meal.grocery_list') }}" class="btn-gen">🛒 Grocery List</a>
+    {% endif %}
+    <a href="{{ url_for('meal.generate_weekly_meals') }}" class="btn-gen primary-btn">🔄 {{ 'Regenerate Plan' if active_plan else 'Generate Plan' }}</a>
+  </div>
+</div>
+
+{% if active_plan %}
+
+<!-- STATS ROW -->
+<div class="stats-row">
+  <div class="ms-card">
+    <span class="ms-val" style="color:var(--sage);">{{ avg_daily_calories }}</span>
+    <span class="ms-lbl">Avg Daily Calories</span>
+  </div>
+  <div class="ms-card">
+    <span class="ms-val" style="color:var(--violet);">{{ avg_daily_protein }}g</span>
+    <span class="ms-lbl">Avg Daily Protein</span>
+  </div>
+  <div class="ms-card">
+    <span class="ms-val" style="color:#3b82f6;">{{ avg_daily_carbs }}g</span>
+    <span class="ms-lbl">Avg Daily Carbs</span>
+  </div>
+  <div class="ms-card">
+    <span class="ms-val" style="color:#f59e0b;">{{ nutrition_score }}%</span>
+    <span class="ms-lbl">Nutrition Score</span>
+  </div>
+</div>
+
+<!-- DAYS GRID -->
+{% set slot_labels = {
+  'Morning Drink': '🌅 Morning',
+  'Breakfast':     '🍳 Breakfast',
+  'Lunch':         '🍱 Lunch',
+  'Snacks':        '🍎 Snack',
+  'Dinner':        '🌙 Dinner'
+} %}
+{% set slot_icons = {
+  'Morning Drink': '☕',
+  'Breakfast':     '🍳',
+  'Lunch':         '🍛',
+  'Snacks':        '🍎',
+  'Dinner':        '🍽️'
+} %}
+
+<div class="days-grid">
+{% for day in ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'] %}
+{% set day_data = weekly_data.get(day, {}) %}
+{% set is_today = (day == today.strftime('%A')) %}
+
+<div class="day-card" style="animation-delay:{{ loop.index * 0.05 }}s;">
+  <div class="day-header">
+    <div class="day-name {% if is_today %}today{% endif %}">
+      {{ '📅 Today — ' if is_today else '' }}{{ day }}
+    </div>
+    <div class="day-stats">
+      {% if day_data %}
+        {% set day_cal  = day_data.values() | sum(attribute='recipe.calories') if day_data else 0 %}
+        {% set day_done = day_data.values() | selectattr('completed') | list | length %}
+        {% set day_tot  = day_data | length %}
+        <span class="day-stat-chip">
+          {{ day_done }}/{{ day_tot }} meals done
+        </span>
+        <span class="day-stat-chip {% if day_done == day_tot %}green{% endif %}">
+          {% set total_cal = namespace(val=0) %}
+          {% for slot, d in day_data.items() %}{% set total_cal.val = total_cal.val + d.recipe.calories %}{% endfor %}
+          {{ total_cal.val }} kcal
+        </span>
+      {% else %}
+        <span class="day-stat-chip">No meals</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="meals-row">
+    {% for slot in ['Morning Drink','Breakfast','Lunch','Snacks','Dinner'] %}
+    {% set meal_data = day_data.get(slot) %}
+    <div class="meal-slot {% if meal_data and meal_data.completed %}completed{% endif %}">
+      <div class="slot-label">{{ slot_labels.get(slot, slot) }}</div>
+      {% if meal_data %}
+        <span class="slot-emoji">{{ slot_icons.get(slot, '🍽️') }}</span>
+        <div class="slot-name {% if meal_data.completed %}done{% endif %}">{{ meal_data.recipe.name }}</div>
+        <div class="slot-cal">{{ meal_data.recipe.calories }} kcal · {{ meal_data.recipe.protein|round(0)|int }}g protein</div>
+        <div class="slot-actions">
+          {% if meal_data.completed %}
+            <span class="slot-btn done-icon" title="Completed">✓</span>
+          {% else %}
+            <a href="{{ url_for('meal.meal_done', item_id=meal_data.item_id) }}"
+               class="slot-btn done-btn" title="Mark as done">✓</a>
+          {% endif %}
+          <a href="{{ url_for('meal.regenerate_meal', item_id=meal_data.item_id) }}"
+             class="slot-btn regen-btn" title="Get different meal">🔄</a>
+        </div>
+      {% else %}
+        <div class="slot-empty">No meal</div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endfor %}
+</div>
+
+{% else %}
+
+<!-- NO PLAN STATE -->
+<div class="no-plan-card">
+  <span class="np-icon">🍱</span>
+  <h2 class="np-title">No Meal Plan Yet</h2>
+  <p class="np-desc">
+    Generate your personalised weekly meal plan based on your health conditions — BP-friendly, low-sodium recipes chosen specifically for you.
+  </p>
+  <a href="{{ url_for('meal.generate_weekly_meals') }}" class="btn-generate">
+    ✨ Generate My Weekly Meal Plan
+  </a>
+</div>
+
+{% endif %}
+
+{% endblock %}

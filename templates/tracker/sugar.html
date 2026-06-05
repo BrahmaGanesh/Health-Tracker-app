@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+{% block title %}Blood Sugar Tracker | HealthTrack{% endblock %}
+{% block page_title %}Blood Sugar Tracker{% endblock %}
+
+{% block content %}
+<style>
+.sugar-hero{background:linear-gradient(135deg,#7c2d12 0%,#ea580c 50%,#f97316 100%);border-radius:var(--radius-lg);padding:28px 32px;color:white;margin-bottom:24px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.sugar-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/svg%3E");}
+.sugar-hero::after{content:'🩺';position:absolute;right:36px;top:50%;transform:translateY(-50%);font-size:120px;opacity:0.09;}
+.hero-left{position:relative;}
+.hero-eyebrow{display:inline-block;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:100px;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+.hero-title{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,34px);font-weight:900;margin-bottom:6px;}
+.hero-sub{font-size:14px;opacity:0.78;}
+.hero-right{position:relative;display:flex;gap:12px;flex-wrap:wrap;}
+.hero-stat{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);border-radius:14px;padding:12px 18px;text-align:center;}
+.hero-stat-val{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;display:block;color:#fed7aa;}
+.hero-stat-lbl{font-size:10px;opacity:0.65;text-transform:uppercase;letter-spacing:0.8px;}
+
+.top-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px;}
+@media(max-width:768px){.top-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.top-grid{grid-template-columns:1fr;}}
+
+.met-card{background:var(--card-bg);border-radius:var(--radius);padding:20px;border:1px solid var(--border);box-shadow:var(--shadow-sm);transition:var(--transition);animation:fadeUp 0.4s ease both;}
+.met-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);}
+.met-card:nth-child(1){animation-delay:0.05s;} .met-card:nth-child(2){animation-delay:0.10s;} .met-card:nth-child(3){animation-delay:0.15s;}
+.mc-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:10px;}
+.mc-val{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;line-height:1;margin-bottom:6px;}
+.mc-val.orange{color:#ea580c;} .mc-val.green{color:var(--sage);} .mc-val.yellow{color:#d97706;}
+.mc-sub{font-size:12px;color:var(--text-muted);}
+.mc-badge{display:inline-flex;align-items:center;gap:5px;border-radius:100px;padding:4px 12px;font-size:11px;font-weight:700;margin-top:8px;}
+.mc-badge.normal{background:#dcfce7;color:#166534;}
+.mc-badge.prediab{background:#fef3c7;color:#92400e;}
+.mc-badge.diab{background:#fee2e2;color:#991b1b;}
+
+.main-grid{display:grid;grid-template-columns:1fr 360px;gap:22px;margin-bottom:24px;}
+@media(max-width:960px){.main-grid{grid-template-columns:1fr;}}
+
+.chart-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;animation:fadeUp 0.4s 0.1s ease both;}
+.chart-hdr{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.chart-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--text-primary);}
+.chart-body{padding:18px 20px 20px;}
+.chart-legend{display:flex;gap:14px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--text-muted);}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+.form-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;animation:fadeUp 0.4s 0.1s ease both;}
+.form-hdr{background:linear-gradient(135deg,#7c2d12,#ea580c);padding:18px 24px;}
+.form-hdr-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:white;}
+.form-hdr-sub{font-size:12px;color:rgba(255,255,255,0.65);margin-top:2px;}
+.form-body{padding:22px 24px;}
+.s-input-wrap{position:relative;}
+.s-input-unit{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:700;color:var(--text-muted);pointer-events:none;}
+.s-input{width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 70px 12px 14px;font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--text-primary);background:var(--input-bg);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+.s-input:focus{border-color:#ea580c;box-shadow:0 0 0 3px rgba(234,88,12,0.12);background:var(--card-bg);}
+.sugar-live{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;margin-top:8px;font-size:13px;font-weight:600;display:none;}
+.sugar-live.show{display:flex;align-items:center;gap:8px;}
+.save-btn{width:100%;background:linear-gradient(135deg,#ea580c,#f97316);color:white;border:none;border-radius:var(--radius-sm);padding:13px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform 0.18s,box-shadow 0.18s;margin-top:14px;}
+.save-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(234,88,12,0.35);}
+
+.guide-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:22px 24px;margin-bottom:22px;animation:fadeUp 0.4s 0.2s ease both;}
+.guide-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--text-primary);margin-bottom:14px;}
+.guide-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+@media(max-width:600px){.guide-grid{grid-template-columns:1fr 1fr;}}
+.guide-item{border-radius:var(--radius-sm);padding:14px;text-align:center;}
+.guide-item.normal{background:#dcfce7;} .guide-item.prediab{background:#fef3c7;} .guide-item.diab{background:#fee2e2;}
+.guide-range{font-family:'DM Mono',monospace;font-size:15px;font-weight:600;margin-bottom:4px;}
+.guide-item.normal .guide-range{color:#166534;} .guide-item.prediab .guide-range{color:#92400e;} .guide-item.diab .guide-range{color:#991b1b;}
+.guide-label{font-size:11px;font-weight:600;color:var(--text-muted);}
+
+.history-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:22px;}
+.history-hdr{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.history-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--text-primary);}
+.s-table{width:100%;border-collapse:collapse;}
+.s-table thead th{background:var(--bg);padding:11px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);border-bottom:1px solid var(--border);white-space:nowrap;}
+.s-table thead th:first-child{padding-left:22px;}
+.s-table tbody td{padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;color:var(--text-primary);vertical-align:middle;}
+.s-table tbody td:first-child{padding-left:22px;}
+.s-table tbody tr:hover{background:var(--bg);}
+.s-table tbody tr:last-child td{border-bottom:none;}
+.del-btn{width:30px;height:30px;border-radius:8px;background:#ffedd5;color:#ea580c;border:none;display:inline-flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;text-decoration:none;transition:all 0.15s;}
+.del-btn:hover{background:#ea580c;color:white;}
+</style>
+
+<div class="sugar-hero animate-fadeIn">
+  <div class="hero-left">
+    <div class="hero-eyebrow">🩺 Diabetes Care</div>
+    <h1 class="hero-title">Blood Sugar Tracker</h1>
+    <p class="hero-sub">Monitor fasting and post-meal glucose levels to manage your condition effectively.</p>
+  </div>
+  <div class="hero-right">
+    {% if latest %}
+    <div class="hero-stat">
+      <span class="hero-stat-val">{{ latest.value_1|int if latest.value_1 else '—' }}</span>
+      <span class="hero-stat-lbl">Last Fasting</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-val">{{ latest.value_2|int if latest.value_2 else '—' }}</span>
+      <span class="hero-stat-lbl">Post-Meal</span>
+    </div>
+    {% endif %}
+    <div class="hero-stat">
+      <span class="hero-stat-val">{{ latest_status }}</span>
+      <span class="hero-stat-lbl">Status</span>
+    </div>
+  </div>
+</div>
+
+<!-- STAT CARDS -->
+<div class="top-grid">
+  <div class="met-card">
+    <div class="mc-lbl">🌅 Fasting Sugar</div>
+    <div class="mc-val orange">{{ latest.value_1|int if latest and latest.value_1 else '—' }}<span style="font-size:14px;color:var(--text-muted);">mg/dL</span></div>
+    <div class="mc-sub">{{ latest.recorded_at.strftime('%d %b %Y') if latest else 'No reading' }}</div>
+    <span class="mc-badge {% if not latest or not latest.value_1 %}normal{% elif latest.value_1 < 100 %}normal{% elif latest.value_1 < 126 %}prediab{% else %}diab{% endif %}">
+      {% if latest and latest.value_1 %}
+        {% if latest.value_1 < 100 %}✅ Normal{% elif latest.value_1 < 126 %}⚠️ Pre-Diabetic{% else %}🔴 High{% endif %}
+      {% else %}No reading{% endif %}
+    </span>
+  </div>
+  <div class="met-card">
+    <div class="mc-lbl">🍽️ Post-Meal Sugar</div>
+    <div class="mc-val yellow">{{ latest.value_2|int if latest and latest.value_2 else '—' }}<span style="font-size:14px;color:var(--text-muted);">mg/dL</span></div>
+    <div class="mc-sub">2 hours after eating</div>
+    <span class="mc-badge {% if not latest or not latest.value_2 %}normal{% elif latest.value_2 < 140 %}normal{% elif latest.value_2 < 200 %}prediab{% else %}diab{% endif %}">
+      {% if latest and latest.value_2 %}
+        {% if latest.value_2 < 140 %}✅ Normal{% elif latest.value_2 < 200 %}⚠️ Elevated{% else %}🔴 High{% endif %}
+      {% else %}No reading{% endif %}
+    </span>
+  </div>
+  <div class="met-card">
+    <div class="mc-lbl">📊 Overall Status</div>
+    <div class="mc-val {% if latest_status == 'Normal' %}green{% elif latest_status == 'Pre-Diabetes' %}yellow{% else %}orange{% endif %}" style="font-size:20px;padding-top:4px;">{{ latest_status }}</div>
+    <div class="mc-sub">Based on latest reading</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-top:8px;">Target fasting: below 100 mg/dL</div>
+  </div>
+</div>
+
+<!-- GUIDE -->
+<div class="guide-card">
+  <div class="guide-title">📊 Blood Sugar Reference Guide</div>
+  <div class="guide-grid">
+    <div class="guide-item normal">
+      <div class="guide-range">Below 100</div>
+      <div class="guide-label">✅ Normal Fasting</div>
+    </div>
+    <div class="guide-item prediab">
+      <div class="guide-range">100 – 125</div>
+      <div class="guide-label">⚠️ Pre-Diabetic</div>
+    </div>
+    <div class="guide-item diab">
+      <div class="guide-range">126+</div>
+      <div class="guide-label">🔴 Diabetes Range</div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN: CHART + FORM -->
+<div class="main-grid">
+  <div class="chart-card">
+    <div class="chart-hdr">
+      <div class="chart-title">📈 Sugar Trend (30 Days)</div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#ea580c;"></div>Fasting</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;"></div>Post-Meal</div>
+      </div>
+    </div>
+    <div class="chart-body">
+      {% if chart_data %}
+        <canvas id="sugarChart" style="max-height:280px;"></canvas>
+      {% else %}
+        <div style="padding:40px;text-align:center;color:var(--text-muted);">
+          <div style="font-size:40px;margin-bottom:12px;">🩺</div>
+          Log sugar readings to see your trend chart here.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="form-card">
+    <div class="form-hdr">
+      <div class="form-hdr-title">➕ Add Sugar Reading</div>
+      <div class="form-hdr-sub">Log fasting & post-meal readings</div>
+    </div>
+    <div class="form-body">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}{% for cat,msg in messages %}
+        <div style="background:{% if cat=='success' %}var(--success-light){% else %}var(--danger-light){% endif %};border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:600;color:{% if cat=='success' %}#166534{% else %}#991b1b{% endif %};">{{ msg }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+      <form method="POST" action="{{ url_for('tracker.sugar') }}">
+        <div style="margin-bottom:14px;">
+          <label class="form-label">Fasting Sugar (before eating)</label>
+          <div class="s-input-wrap">
+            <input type="number" name="fasting" id="fastingInput" class="s-input"
+                   placeholder="95" min="20" max="600" step="1"
+                   oninput="updateSugarPreview('fasting', this.value)">
+            <span class="s-input-unit">mg/dL</span>
+          </div>
+          <div class="sugar-live" id="fastingPreview">
+            <span id="fastingIcon">📊</span><span id="fastingText"></span>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label class="form-label">Post-Meal Sugar (2hr after eating)</label>
+          <div class="s-input-wrap">
+            <input type="number" name="post_meal" id="postInput" class="s-input"
+                   placeholder="120" min="20" max="800" step="1"
+                   oninput="updateSugarPreview('post', this.value)">
+            <span class="s-input-unit">mg/dL</span>
+          </div>
+          <div class="sugar-live" id="postPreview">
+            <span id="postIcon">📊</span><span id="postText"></span>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label class="form-label">Notes (optional)</label>
+          <input type="text" name="notes" class="form-control" style="font-size:13px;" placeholder="e.g. After exercise, stressed...">
+        </div>
+        <button type="submit" class="save-btn">🩺 Save Sugar Reading</button>
+      </form>
+      <div style="margin-top:14px;background:var(--bg);border-radius:var(--radius-sm);padding:12px 14px;">
+        <div style="font-size:12px;font-weight:600;color:var(--text-muted);">📋 Tips</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:6px;line-height:1.6;">
+          • Fasting: no food/drink for 8+ hours<br>
+          • Post-meal: exactly 2 hours after eating<br>
+          • Same time of day for consistent comparison
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="history-card">
+  <div class="history-hdr">
+    <div class="history-title">📋 Sugar History</div>
+    <span style="background:#ffedd5;color:#ea580c;border-radius:100px;padding:4px 14px;font-size:12px;font-weight:600;">{{ history|length }} Records</span>
+  </div>
+  {% if history %}
+  <div style="overflow-x:auto;">
+    <table class="s-table">
+      <thead>
+        <tr><th>Date & Time</th><th>Fasting</th><th>Post-Meal</th><th>Status</th><th>Notes</th><th>Del</th></tr>
+      </thead>
+      <tbody>
+        {% for r in history %}
+        {% set f = r.value_1 %}
+        {% set p = r.value_2 %}
+        {% set status = 'Normal' if f and f < 100 else ('Pre-Diabetic' if f and f < 126 else ('High' if f else 'Logged')) %}
+        {% set scls = 'normal' if status == 'Normal' else ('prediab' if status == 'Pre-Diabetic' else 'diab') %}
+        <tr>
+          <td>
+            <div style="font-weight:600;">{{ r.recorded_at.strftime('%d %b %Y') }}</div>
+            <div style="font-size:11px;color:var(--text-muted);">{{ r.recorded_at.strftime('%I:%M %p') }}</div>
+          </td>
+          <td style="font-family:'DM Mono',monospace;font-size:15px;font-weight:600;{% if f and f >= 126 %}color:#ea580c;{% endif %}">
+            {{ f|int if f else '—' }}{% if f %}<span style="font-size:11px;color:var(--text-muted);">mg/dL</span>{% endif %}
+          </td>
+          <td style="font-family:'DM Mono',monospace;font-size:15px;{% if p and p >= 200 %}color:#ea580c;{% endif %}">
+            {{ p|int if p else '—' }}{% if p %}<span style="font-size:11px;color:var(--text-muted);">mg/dL</span>{% endif %}
+          </td>
+          <td><span class="mc-badge {{ scls }}" style="font-size:10px;">{{ status }}</span></td>
+          <td style="font-size:13px;color:var(--text-muted);">{{ r.notes or '—' }}</td>
+          <td>
+            <a href="{{ url_for('tracker.delete_metric', metric_id=r.id) }}"
+               class="del-btn" onclick="return confirm('Delete this reading?')">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div style="padding:40px;text-align:center;color:var(--text-muted);">
+    <div style="font-size:40px;margin-bottom:10px;">🩺</div>
+    No sugar history yet. Add your first reading above.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const sugarData = {{ chart_data | tojson }};
+if (sugarData.length) HealthCharts.createSugarChart('sugarChart', sugarData);
+
+function updateSugarPreview(type, val) {
+  const n       = parseFloat(val);
+  const prevId  = type === 'fasting' ? 'fastingPreview' : 'postPreview';
+  const textId  = type === 'fasting' ? 'fastingText' : 'postText';
+  const iconId  = type === 'fasting' ? 'fastingIcon' : 'postIcon';
+  const preview = document.getElementById(prevId);
+  if (!n) { preview.classList.remove('show'); return; }
+
+  let status, color, icon;
+  if (type === 'fasting') {
+    if (n < 100)      { status='Normal ✅';        color='#166534'; icon='✅'; }
+    else if (n < 126) { status='Pre-Diabetic ⚠️';  color='#92400e'; icon='⚠️'; }
+    else              { status='High 🔴 — Consult doctor'; color='#991b1b'; icon='🔴'; }
+  } else {
+    if (n < 140)      { status='Normal ✅';        color='#166534'; icon='✅'; }
+    else if (n < 200) { status='Elevated ⚠️';      color='#92400e'; icon='⚠️'; }
+    else              { status='High 🔴';           color='#991b1b'; icon='🔴'; }
+  }
+  document.getElementById(textId).textContent = `${n} mg/dL — ${status}`;
+  document.getElementById(textId).style.color  = color;
+  document.getElementById(iconId).textContent  = icon;
+  preview.classList.add('show');
+}
+</script>
+{% endblock %}

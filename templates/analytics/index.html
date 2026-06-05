@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+{% block title %}Analytics | HealthTrack{% endblock %}
+{% block page_title %}Health Analytics{% endblock %}
+
+{% block content %}
+<style>
+.analytics-hero{background:linear-gradient(135deg,var(--navy) 0%,#1e3f6e 50%,var(--violet) 100%);border-radius:var(--radius-lg);padding:28px 32px;color:white;margin-bottom:24px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.analytics-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/svg%3E");}
+.analytics-hero::after{content:'📊';position:absolute;right:36px;top:50%;transform:translateY(-50%);font-size:120px;opacity:0.09;}
+.hero-left{position:relative;}
+.hero-eyebrow{display:inline-block;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:100px;padding:4px 14px;font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px;}
+.hero-title{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,34px);font-weight:900;margin-bottom:6px;}
+.hero-subtitle{font-size:14px;opacity:0.78;}
+.hero-right{position:relative;display:flex;gap:12px;flex-wrap:wrap;}
+.hero-stat{background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);border-radius:14px;padding:12px 18px;text-align:center;min-width:90px;}
+.hero-stat-val{font-family:'DM Mono',monospace;font-size:22px;font-weight:500;display:block;color:#9fd3c7;}
+.hero-stat-lbl{font-size:10px;opacity:0.65;text-transform:uppercase;letter-spacing:0.8px;}
+
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:24px;}
+@media(max-width:1000px){.summary-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:500px){.summary-grid{grid-template-columns:1fr 1fr;}}
+
+.sum-card{background:var(--card-bg);border-radius:var(--radius);padding:20px;border:1px solid var(--border);box-shadow:var(--shadow-sm);animation:fadeUp 0.4s ease both;transition:var(--transition);}
+.sum-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);}
+.sum-card:nth-child(1){animation-delay:0.05s;} .sum-card:nth-child(2){animation-delay:0.10s;}
+.sum-card:nth-child(3){animation-delay:0.15s;} .sum-card:nth-child(4){animation-delay:0.20s;}
+.sum-lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:10px;}
+.sum-val{font-family:'DM Mono',monospace;font-size:26px;font-weight:500;line-height:1;margin-bottom:6px;}
+.sum-val.red{color:#ef4444;} .sum-val.green{color:var(--sage);} .sum-val.violet{color:var(--violet);} .sum-val.blue{color:#3b82f6;}
+.sum-sub{font-size:12px;color:var(--text-muted);}
+
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:24px;}
+@media(max-width:900px){.charts-grid{grid-template-columns:1fr;}}
+
+.chart-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;animation:fadeUp 0.4s ease both;}
+.chart-hdr{padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+.chart-title{font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--text-primary);}
+.chart-body{padding:16px 18px 18px;}
+.chart-legend{display:flex;gap:12px;flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--text-muted);}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.range-btns{display:flex;gap:4px;}
+.range-btn{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text-muted);cursor:pointer;transition:all 0.15s;}
+.range-btn.active,.range-btn:hover{background:var(--navy);color:white;border-color:var(--navy);}
+
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px;margin-bottom:24px;}
+@media(max-width:900px){.three-col{grid-template-columns:1fr;}}
+
+.insights-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;animation:fadeUp 0.4s 0.2s ease both;}
+.insights-hdr{padding:16px 22px;border-bottom:1px solid var(--border);}
+.insights-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:var(--text-primary);}
+.insight-item{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;gap:12px;align-items:flex-start;transition:background 0.15s;}
+.insight-item:last-child{border-bottom:none;}
+.insight-item:hover{background:var(--bg);}
+.insight-icon{font-size:22px;flex-shrink:0;margin-top:2px;}
+.insight-content{}
+.insight-text{font-size:13px;color:var(--text-primary);line-height:1.55;margin-bottom:4px;}
+.insight-dir{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;}
+.dir-improving{color:var(--sage);} .dir-worsening{color:#ef4444;} .dir-stable{color:var(--text-muted);}
+
+.adherence-card{background:linear-gradient(135deg,var(--navy),#1e3f6e,var(--violet));color:white;border-radius:var(--radius);padding:24px 26px;animation:fadeUp 0.4s 0.25s ease both;position:relative;overflow:hidden;margin-bottom:24px;}
+.adherence-card::after{content:'🏆';position:absolute;right:20px;top:50%;transform:translateY(-50%);font-size:80px;opacity:0.09;}
+.adherence-title{font-family:'Fraunces',serif;font-size:18px;font-weight:700;margin-bottom:16px;position:relative;}
+.adherence-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;position:relative;}
+@media(max-width:700px){.adherence-grid{grid-template-columns:repeat(2,1fr);}}
+.adh-stat{text-align:center;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:14px 10px;}
+.adh-val{font-family:'DM Mono',monospace;font-size:28px;font-weight:500;color:#9fd3c7;display:block;margin-bottom:4px;}
+.adh-lbl{font-size:10px;opacity:0.65;text-transform:uppercase;letter-spacing:0.6px;}
+
+.no-data{padding:40px 20px;text-align:center;color:var(--text-muted);}
+.no-data-icon{font-size:40px;display:block;margin-bottom:10px;}
+</style>
+
+<!-- HERO -->
+<div class="analytics-hero animate-fadeIn">
+  <div class="hero-left">
+    <div class="hero-eyebrow">📊 Health Intelligence</div>
+    <h1 class="hero-title">Analytics Dashboard</h1>
+    <p class="hero-subtitle">Deep dive into your health trends, progress, and insights — all in one place.</p>
+  </div>
+  <div class="hero-right">
+    <div class="hero-stat">
+      <span class="hero-stat-val">{{ bp_streak }}</span>
+      <span class="hero-stat-lbl">BP Streak</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-val">{{ meal_adherence }}%</span>
+      <span class="hero-stat-lbl">Meal Adherence</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-val">{{ avg_cal_14 }}</span>
+      <span class="hero-stat-lbl">Avg Calories</span>
+    </div>
+  </div>
+</div>
+
+<!-- SUMMARY CARDS -->
+<div class="summary-grid">
+  <div class="sum-card">
+    <div class="sum-lbl">❤️ Avg BP (30d)</div>
+    <div class="sum-val red">{% if avg_sys %}{{ avg_sys|int }}/{{ avg_dia|int }}{% else %}—{% endif %}</div>
+    <div class="sum-sub">
+      ✅ Normal: {{ days_normal }} days ·
+      🔴 High: {{ days_high }} days
+    </div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-lbl">⚖️ Weight Change (60d)</div>
+    <div class="sum-val {% if wt_change_60 and wt_change_60 < 0 %}green{% elif wt_change_60 and wt_change_60 > 0 %}violet{% else %}blue{% endif %}">
+      {% if wt_change_60 is not none %}{{ '+' if wt_change_60 > 0 else '' }}{{ wt_change_60 }}kg{% else %}—{% endif %}
+    </div>
+    <div class="sum-sub">Current: {{ latest_weight or '—' }}{% if latest_weight %}kg{% endif %}</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-lbl">🔥 Avg Calories (14d)</div>
+    <div class="sum-val blue">{{ avg_cal_14 }}</div>
+    <div class="sum-sub">Target: {{ calorie_target }} kcal/day</div>
+  </div>
+  <div class="sum-card">
+    <div class="sum-lbl">🍱 Meal Adherence</div>
+    <div class="sum-val green">{{ meal_adherence }}%</div>
+    <div class="sum-sub">Meals completed this week</div>
+  </div>
+</div>
+
+<!-- ADHERENCE STATS -->
+<div class="adherence-card">
+  <div class="adherence-title">🏆 30-Day Health Summary</div>
+  <div class="adherence-grid">
+    <div class="adh-stat">
+      <span class="adh-val">{{ bp_streak }}</span>
+      <span class="adh-lbl">BP Streak Days</span>
+    </div>
+    <div class="adh-stat">
+      <span class="adh-val">{{ days_normal }}</span>
+      <span class="adh-lbl">BP Normal Days</span>
+    </div>
+    <div class="adh-stat">
+      <span class="adh-val">{{ avg_7_pro }}g</span>
+      <span class="adh-lbl">Avg Protein/Day</span>
+    </div>
+    <div class="adh-stat">
+      <span class="adh-val">{{ avg_7_fiber }}g</span>
+      <span class="adh-lbl">Avg Fiber/Day</span>
+    </div>
+  </div>
+</div>
+
+<!-- CHARTS GRID -->
+<div class="charts-grid">
+
+  <!-- BP Chart -->
+  <div class="chart-card">
+    <div class="chart-hdr">
+      <div class="chart-title">❤️ BP Trend</div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+        <div class="chart-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:#ef4444;"></div>Systolic</div>
+          <div class="leg-item"><div class="leg-dot" style="background:#3b82f6;"></div>Diastolic</div>
+        </div>
+        <div class="range-btns">
+          <button class="range-btn active" onclick="loadBpChart(7,this)">7D</button>
+          <button class="range-btn" onclick="loadBpChart(30,this)">30D</button>
+          <button class="range-btn" onclick="loadBpChart(60,this)">60D</button>
+        </div>
+      </div>
+    </div>
+    <div class="chart-body">
+      {% if bp_chart %}
+        <canvas id="analyticsBpChart" style="max-height:220px;"></canvas>
+      {% else %}
+        <div class="no-data"><span class="no-data-icon">❤️</span>No BP data yet</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Weight Chart -->
+  <div class="chart-card">
+    <div class="chart-hdr">
+      <div class="chart-title">⚖️ Weight Trend</div>
+      <div class="range-btns">
+        <button class="range-btn active" onclick="loadWeightChart(30,this)">30D</button>
+        <button class="range-btn" onclick="loadWeightChart(60,this)">60D</button>
+        <button class="range-btn" onclick="loadWeightChart(90,this)">90D</button>
+      </div>
+    </div>
+    <div class="chart-body">
+      {% if weight_chart %}
+        <canvas id="analyticsWtChart" style="max-height:220px;"></canvas>
+      {% else %}
+        <div class="no-data"><span class="no-data-icon">⚖️</span>No weight data yet</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Nutrition Chart -->
+  <div class="chart-card">
+    <div class="chart-hdr">
+      <div class="chart-title">🥗 Nutrition (14 Days)</div>
+      <div class="chart-legend">
+        <div class="leg-item"><div class="leg-dot" style="background:#ef4444;"></div>Calories</div>
+        <div class="leg-item"><div class="leg-dot" style="background:var(--sage);"></div>Protein</div>
+      </div>
+    </div>
+    <div class="chart-body">
+      {% if nutrition_chart %}
+        <canvas id="analyticsNutrChart" style="max-height:220px;"></canvas>
+      {% else %}
+        <div class="no-data"><span class="no-data-icon">🥗</span>No nutrition data yet</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Water Chart -->
+  <div class="chart-card">
+    <div class="chart-hdr">
+      <div class="chart-title">💧 Hydration (7 Days)</div>
+      <span style="font-size:12px;color:var(--text-muted);">Target: {{ water_target }}L</span>
+    </div>
+    <div class="chart-body">
+      {% if water_7 %}
+        <canvas id="analyticsWaterChart" style="max-height:220px;"></canvas>
+      {% else %}
+        <div class="no-data"><span class="no-data-icon">💧</span>No water data yet</div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<!-- INSIGHTS + SCORE -->
+<div class="three-col">
+
+  <!-- Insights -->
+  <div class="insights-card" style="grid-column:span 2;">
+    <div class="insights-hdr">
+      <div class="insights-title">🧠 Intelligence Insights</div>
+    </div>
+    {% if insights %}
+      {% for ins in insights %}
+      <div class="insight-item animate-on-scroll">
+        <div class="insight-icon">{{ ins.icon }}</div>
+        <div class="insight-content">
+          <div class="insight-text">{{ ins.insight_text }}</div>
+          <div class="insight-dir dir-{{ ins.direction }}">
+            {% if ins.direction == 'improving' %}↑ Improving
+            {% elif ins.direction == 'worsening' %}↓ Needs Attention
+            {% else %}→ Stable{% endif %}
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="no-data"><span class="no-data-icon">💡</span>Track your metrics to unlock personalised insights.</div>
+    {% endif %}
+  </div>
+
+  <!-- Health Score Trend -->
+  <div class="chart-card">
+    <div class="chart-hdr"><div class="chart-title">💯 Health Score</div></div>
+    <div class="chart-body">
+      {% if score_trend %}
+        <canvas id="scoreChart" style="max-height:220px;"></canvas>
+      {% else %}
+        <div class="no-data"><span class="no-data-icon">💯</span>Complete meals to generate a score.</div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const bpData      = {{ bp_chart      | tojson }};
+const weightData  = {{ weight_chart  | tojson }};
+const nutriData   = {{ nutrition_chart | tojson }};
+const waterData   = {{ water_7       | tojson }};
+const scoreData   = {{ score_trend   | tojson }};
+const wtTarget    = {{ current_user.goals.target_weight_kg if current_user.goals and current_user.goals.target_weight_kg else 'null' }};
+const waterTarget = {{ water_target }};
+
+if (bpData.length)     HealthCharts.createBpChart('analyticsBpChart', bpData);
+if (weightData.length) HealthCharts.createWeightChart('analyticsWtChart', weightData, wtTarget);
+if (nutriData.length)  HealthCharts.createNutritionChart('analyticsNutrChart', nutriData);
+if (waterData.length)  HealthCharts.createWaterChart('analyticsWaterChart', waterData, waterTarget);
+if (scoreData.length)  HealthCharts.createScoreChart('scoreChart', scoreData);
+
+async function loadBpChart(days, btn) {
+  document.querySelectorAll('.range-btn').forEach(b => {
+    if (b.parentElement === btn.parentElement) b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  const data = await fetch(`{{ url_for('analytics.bp_data') }}?days=${days}`).then(r => r.json());
+  HealthCharts.createBpChart('analyticsBpChart', data);
+}
+
+async function loadWeightChart(days, btn) {
+  document.querySelectorAll('.range-btn').forEach(b => {
+    if (b.parentElement === btn.parentElement) b.classList.remove('active');
+  });
+  btn.classList.add('active');
+  const data = await fetch(`{{ url_for('analytics.weight_data') }}?days=${days}`).then(r => r.json());
+  HealthCharts.createWeightChart('analyticsWtChart', data, wtTarget);
+}
+</script>
+{% endblock %}

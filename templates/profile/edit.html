@@ -1,0 +1,360 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile | HealthTrack{% endblock %}
+{% block page_title %}Edit Profile{% endblock %}
+
+{% block content %}
+<style>
+.edit-hero{background:linear-gradient(135deg,var(--navy),#1e3f6e,var(--violet));border-radius:var(--radius-lg);padding:24px 32px;color:white;margin-bottom:24px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.edit-hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/svg%3E");}
+.edit-hero-left{position:relative;}
+.edit-hero-title{font-family:'Fraunces',serif;font-size:clamp(20px,3vw,30px);font-weight:900;margin-bottom:4px;}
+.edit-hero-sub{font-size:13px;opacity:0.75;}
+.btn-back-hero{background:rgba(255,255,255,0.15);color:white;border:1.5px solid rgba(255,255,255,0.3);border-radius:var(--radius-sm);padding:9px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:6px;transition:all 0.18s;position:relative;}
+.btn-back-hero:hover{background:rgba(255,255,255,0.25);color:white;}
+
+.edit-layout{display:grid;grid-template-columns:220px 1fr;gap:24px;}
+@media(max-width:900px){.edit-layout{grid-template-columns:1fr;}}
+
+/* Tab sidebar */
+.tab-sidebar{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:16px 12px;height:fit-content;position:sticky;top:90px;}
+.tab-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;color:var(--text-muted);cursor:pointer;transition:all 0.15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;}
+.tab-item:hover{background:var(--bg);color:var(--text-primary);}
+.tab-item.active{background:var(--accent-pale);color:var(--accent-dark);font-weight:700;}
+.tab-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+
+/* Sections */
+.edit-section{display:none;}
+.edit-section.active{display:block;}
+
+.section-card{background:var(--card-bg);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:22px;animation:fadeUp 0.4s ease both;}
+.section-hdr{background:linear-gradient(135deg,var(--navy),#1e3f6e);padding:18px 24px;}
+.section-hdr-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;color:white;display:flex;align-items:center;gap:8px;}
+.section-hdr-sub{font-size:12px;color:rgba(255,255,255,0.65);margin-top:4px;}
+.section-body{padding:24px;}
+
+.field-group{margin-bottom:20px;}
+.field-label{display:block;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:7px;}
+.field-input{width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text-primary);background:var(--input-bg);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+.field-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow);background:var(--card-bg);}
+.field-input.select-input{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px;}
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+@media(max-width:600px){.form-grid-2,.form-grid-3{grid-template-columns:1fr;}}
+
+.save-section-btn{background:linear-gradient(135deg,var(--sage),var(--mint));color:var(--navy);border:none;border-radius:var(--radius-sm);padding:12px 28px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform 0.18s,box-shadow 0.18s;}
+.save-section-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(97,179,144,0.35);}
+
+/* Conditions picker */
+.cond-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:20px;}
+.cond-opt{position:relative;}
+.cond-opt input{position:absolute;opacity:0;width:0;height:0;}
+.cond-btn{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--input-bg);cursor:pointer;transition:all 0.18s;font-size:13px;font-weight:600;color:var(--text-muted);}
+.cond-icon{font-size:18px;flex-shrink:0;}
+.cond-opt input:checked + .cond-btn{border-color:var(--accent);background:var(--accent-pale);color:var(--accent-dark);box-shadow:0 0 0 2px var(--accent-glow);}
+.cond-btn:hover{border-color:var(--accent);color:var(--accent);}
+.cat-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin:16px 0 8px;padding-left:2px;}
+
+/* Option cards for diet/activity -->*/
+.option-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;}
+.opt-card{position:relative;}
+.opt-card input{position:absolute;opacity:0;width:0;height:0;}
+.opt-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 10px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--input-bg);cursor:pointer;transition:all 0.18s;text-align:center;}
+.opt-icon{font-size:22px;}
+.opt-title{font-size:12px;font-weight:700;color:var(--text-primary);}
+.opt-desc{font-size:10px;color:var(--text-muted);}
+.opt-card input:checked + .opt-btn{border-color:var(--accent);background:var(--accent-pale);box-shadow:0 0 0 2px var(--accent-glow);}
+.opt-btn:hover{border-color:var(--accent);}
+</style>
+
+<!-- HERO -->
+<div class="edit-hero animate-fadeIn">
+  <div class="edit-hero-left">
+    <div class="edit-hero-title">✏️ Edit Profile</div>
+    <div class="edit-hero-sub">Update your personal details, conditions, goals, and lifestyle preferences.</div>
+  </div>
+  <a href="{{ url_for('profile.index') }}" class="btn-back-hero">← Back to Profile</a>
+</div>
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div style="margin-bottom:20px;">
+    {% for cat, msg in messages %}
+    <div class="alert-banner {{ cat if cat in ['danger','success','warning','info'] else 'info' }} animate-fadeIn">
+      <span class="alert-banner-icon">{% if cat=='success' %}✅{% elif cat=='danger' %}⚠️{% else %}ℹ️{% endif %}</span>
+      <span>{{ msg }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+<div class="edit-layout">
+
+  <!-- TAB SIDEBAR -->
+  <div class="tab-sidebar">
+    {% set tabs = [
+      ('personal',     '👤', 'Personal'),
+      ('measurements', '📏', 'Measurements'),
+      ('conditions',   '🏥', 'Conditions'),
+      ('goals',        '🎯', 'Goals'),
+      ('lifestyle',    '🌿', 'Lifestyle'),
+    ] %}
+    {% for tab_id, icon, label in tabs %}
+    <button class="tab-item {% if loop.first %}active{% endif %}"
+            onclick="showTab('{{ tab_id }}')"
+            id="tab-btn-{{ tab_id }}">
+      <span class="tab-icon">{{ icon }}</span>
+      {{ label }}
+    </button>
+    {% endfor %}
+  </div>
+
+  <!-- CONTENT PANELS -->
+  <div>
+
+    <!-- PERSONAL -->
+    <div class="edit-section active" id="section-personal">
+      <div class="section-card">
+        <div class="section-hdr">
+          <div class="section-hdr-title">👤 Personal Details</div>
+          <div class="section-hdr-sub">Update your name, gender, and date of birth</div>
+        </div>
+        <div class="section-body">
+          <form method="POST" action="{{ url_for('profile.edit') }}">
+            <input type="hidden" name="section" value="personal">
+            <div class="form-grid-2">
+              <div class="field-group" style="grid-column:span 2;">
+                <label class="field-label">Full Name</label>
+                <input type="text" name="name" class="field-input"
+                       value="{{ user.name }}" placeholder="Your full name" required>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Gender</label>
+                <select name="gender" class="field-input select-input">
+                  {% for val, lbl in [('female','Female'),('male','Male'),('other','Other')] %}
+                  <option value="{{ val }}" {% if user.health_profile and user.health_profile.gender == val %}selected{% endif %}>{{ lbl }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Date of Birth</label>
+                <input type="date" name="date_of_birth" class="field-input"
+                       value="{{ user.health_profile.date_of_birth.strftime('%Y-%m-%d') if user.health_profile and user.health_profile.date_of_birth else '' }}">
+              </div>
+            </div>
+            <button type="submit" class="save-section-btn">💾 Save Personal Details</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEASUREMENTS -->
+    <div class="edit-section" id="section-measurements">
+      <div class="section-card">
+        <div class="section-hdr">
+          <div class="section-hdr-title">📏 Body Measurements</div>
+          <div class="section-hdr-sub">Logging new weight will also create a tracker entry</div>
+        </div>
+        <div class="section-body">
+          <form method="POST" action="{{ url_for('profile.edit') }}">
+            <input type="hidden" name="section" value="measurements">
+            <div class="form-grid-2">
+              <div class="field-group">
+                <label class="field-label">Height (cm)</label>
+                <input type="number" name="height_cm" class="field-input"
+                       value="{{ user.health_profile.height_cm if user.health_profile and user.health_profile.height_cm else '' }}"
+                       placeholder="e.g. 165" min="100" max="250" step="0.1">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Current Weight (kg)</label>
+                <input type="number" name="weight_kg" class="field-input"
+                       value="{{ user.health_profile.current_weight_kg if user.health_profile and user.health_profile.current_weight_kg else '' }}"
+                       placeholder="e.g. 80" min="20" max="300" step="0.1">
+              </div>
+            </div>
+            {% if user.bmi %}
+            <div style="background:var(--accent-pale);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:18px;font-size:14px;font-weight:600;color:var(--accent-dark);">
+              📊 Current BMI: {{ user.bmi }} — {{ user.bmi_status }}
+            </div>
+            {% endif %}
+            <button type="submit" class="save-section-btn">💾 Save Measurements</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONDITIONS -->
+    <div class="edit-section" id="section-conditions">
+      <div class="section-card">
+        <div class="section-hdr">
+          <div class="section-hdr-title">🏥 Health Conditions</div>
+          <div class="section-hdr-sub">Select all that apply — this filters every recommendation</div>
+        </div>
+        <div class="section-body">
+          <form method="POST" action="{{ url_for('profile.edit') }}">
+            <input type="hidden" name="section" value="conditions">
+            {% set cat_labels = {
+              'cardiovascular': '❤️ Cardiovascular',
+              'metabolic':      '🩺 Metabolic',
+              'hormonal':       '🌸 Hormonal',
+              'lifestyle':      '🌿 Lifestyle Goals',
+              'digestive':      '🔥 Digestive',
+            } %}
+            {% set current_cat = namespace(value='') %}
+            {% for c in all_conditions %}
+              {% if c.category != current_cat.value %}
+                {% set current_cat.value = c.category %}
+                <div class="cat-label">{{ cat_labels.get(c.category, c.category or 'Other') }}</div>
+                <div class="cond-grid">
+              {% endif %}
+              <label class="cond-opt">
+                <input type="checkbox" name="conditions" value="{{ c.id }}"
+                       {% if c.id in existing_ids %}checked{% endif %}>
+                <div class="cond-btn">
+                  <span class="cond-icon">{{ c.icon }}</span>
+                  {{ c.name }}
+                </div>
+              </label>
+              {% if loop.last %}</div>{% endif %}
+            {% endfor %}
+            <div style="margin-top:20px;">
+              <button type="submit" class="save-section-btn">💾 Save Conditions</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- GOALS -->
+    <div class="edit-section" id="section-goals">
+      <div class="section-card">
+        <div class="section-hdr">
+          <div class="section-hdr-title">🎯 Health Goals</div>
+          <div class="section-hdr-sub">Set your weight target, daily water, and step goals</div>
+        </div>
+        <div class="section-body">
+          <form method="POST" action="{{ url_for('profile.edit') }}">
+            <input type="hidden" name="section" value="goals">
+            <div class="form-grid-2">
+              <div class="field-group">
+                <label class="field-label">Target Weight (kg)</label>
+                <input type="number" name="target_weight" class="field-input"
+                       value="{{ user.goals.target_weight_kg if user.goals and user.goals.target_weight_kg else '' }}"
+                       placeholder="e.g. 70" min="20" max="200" step="0.5">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Goal Speed</label>
+                <select name="goal_speed" class="field-input select-input">
+                  {% for val, lbl in [('slow','Slow — 0.25kg/week'),('normal','Normal — 0.5kg/week'),('fast','Fast — 0.75kg/week')] %}
+                  <option value="{{ val }}" {% if user.goals and user.goals.goal_speed == val %}selected{% endif %}>{{ lbl }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Daily Water Target (litres)</label>
+                <input type="number" name="target_water" class="field-input"
+                       value="{{ user.goals.target_water_litres if user.goals else 2.5 }}"
+                       placeholder="2.5" min="0.5" max="6" step="0.25">
+              </div>
+              <div class="field-group">
+                <label class="field-label">Daily Step Target</label>
+                <input type="number" name="target_steps" class="field-input"
+                       value="{{ user.goals.target_steps if user.goals else 8000 }}"
+                       placeholder="8000" min="1000" max="30000" step="500">
+              </div>
+            </div>
+            <button type="submit" class="save-section-btn">💾 Save Goals</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIFESTYLE -->
+    <div class="edit-section" id="section-lifestyle">
+      <div class="section-card">
+        <div class="section-hdr">
+          <div class="section-hdr-title">🌿 Lifestyle Preferences</div>
+          <div class="section-hdr-sub">Diet and activity level affects calorie targets and recipe filters</div>
+        </div>
+        <div class="section-body">
+          <form method="POST" action="{{ url_for('profile.edit') }}">
+            <input type="hidden" name="section" value="lifestyle">
+
+            <div class="field-group" style="margin-bottom:24px;">
+              <label class="field-label" style="margin-bottom:12px;">Diet Type</label>
+              <div class="option-cards">
+                {% for val, icon, title, desc in [
+                  ('vegetarian','🥦','Vegetarian','No meat or fish'),
+                  ('non_vegetarian','🍗','Non-Veg','Includes meat & fish'),
+                  ('vegan','🌱','Vegan','No animal products'),
+                  ('eggetarian','🥚','Eggetarian','Veg + eggs'),
+                ] %}
+                <label class="opt-card">
+                  <input type="radio" name="diet_preference" value="{{ val }}"
+                         {% if user.health_profile and user.health_profile.diet_preference == val %}checked{% endif %}>
+                  <div class="opt-btn">
+                    <span class="opt-icon">{{ icon }}</span>
+                    <span class="opt-title">{{ title }}</span>
+                    <span class="opt-desc">{{ desc }}</span>
+                  </div>
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="field-group" style="margin-bottom:24px;">
+              <label class="field-label" style="margin-bottom:12px;">Activity Level</label>
+              <div class="option-cards">
+                {% for val, icon, title, desc in [
+                  ('sedentary','🪑','Sedentary','Desk job, little exercise'),
+                  ('light','🚶','Light','1–3 days/week'),
+                  ('moderate','🏃','Moderate','3–5 days/week'),
+                  ('active','⚡','Active','6–7 days/week'),
+                  ('very_active','🏋️','Very Active','Intense daily'),
+                ] %}
+                <label class="opt-card">
+                  <input type="radio" name="activity_level" value="{{ val }}"
+                         {% if user.health_profile and user.health_profile.activity_level == val %}checked{% endif %}>
+                  <div class="opt-btn">
+                    <span class="opt-icon">{{ icon }}</span>
+                    <span class="opt-title">{{ title }}</span>
+                    <span class="opt-desc">{{ desc }}</span>
+                  </div>
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div style="background:var(--accent-pale);border-radius:var(--radius-sm);padding:14px 18px;margin-bottom:20px;font-size:13px;color:var(--accent-dark);">
+              <strong>Your targets will be recalculated</strong> after saving — calorie target and protein target are computed from your age, gender, weight, and activity level.
+            </div>
+
+            <button type="submit" class="save-section-btn">💾 Save Lifestyle</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showTab(tabId) {
+  document.querySelectorAll('.edit-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + tabId)?.classList.add('active');
+  document.getElementById('tab-btn-' + tabId)?.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Check URL hash on load
+const hash = window.location.hash.replace('#','');
+if (hash && document.getElementById('section-' + hash)) {
+  showTab(hash);
+}
+</script>
+{% endblock %}
