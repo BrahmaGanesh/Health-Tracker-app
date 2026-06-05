@@ -19,6 +19,10 @@ from extensions import db, bcrypt, login_manager, migrate, mail, cache
 def create_app(config_class=None):
     app = Flask(__name__)
 
+    @app.route("/")
+    def home():
+        return "OK"
+    
     # ── CONFIG ───────────────────────────────────────────────
     if config_class is None:
         config_class = get_config()
