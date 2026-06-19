@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="NONE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="d2bf8e3f-420e-490b-bcbc-a137922dd654" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/healthtrack_new/lib/services/notification_service.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config.py" beforeDir="false" afterPath="$PROJECT_DIR$/config.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/extensions.py" beforeDir="false" afterPath="$PROJECT_DIR$/extensions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/instance/health_tracker.db" beforeDir="false" afterPath="$PROJECT_DIR$/instance/health_tracker.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/routes/auth_routes.py" beforeDir="false" afterPath="$PROJECT_DIR$/routes/auth_routes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/seed_recipes.py" beforeDir="false" afterPath="$PROJECT_DIR$/seed_recipes.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/auth/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/auth/login.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/auth/onboarding/step1.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/auth/onboarding/step1.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/auth/onboarding/step2.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/auth/onboarding/step2.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/auth/onboarding/step3.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/auth/onboarding/step3.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/auth/onboarding/step4.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/auth/onboarding/step4.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/auth/onboarding/step5.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/auth/onboarding/step5.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/auth/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/auth/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/bp/tracker.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/bp/tracker.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/tracker/sugar.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/tracker/sugar.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/tracker/water.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/tracker/water.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/tracker/weight.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/tracker/weight.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/wsgi.py" beforeDir="false" afterPath="$PROJECT_DIR$/wsgi.py" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 3,
+  "fromUser": false
+}]]></component>
+  <component name="ProjectId" id="3FLPPBhj2pUAfXhMs56P8KE6Tdu" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "git-widget-placeholder": "main",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/health app/health_tracker"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\health app\health_tracker\healthtrack_new" />
+      <recent name="C:\health app\health_tracker\new_flutter_app" />
+    </key>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d2bf8e3f-420e-490b-bcbc-a137922dd654" name="Changes" comment="" />
+      <created>1781851350132</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1781851350132</updated>
+    </task>
+    <servers />
+  </component>
+</project>
